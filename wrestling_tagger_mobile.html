@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>レスリング タガー モバイル</title>
+<style>
+  :root{
+    --bg:#161A21; --surface:#1F242E; --surface2:#262C38; --line:#323A48;
+    --text:#E9ECF2; --muted:#9AA3B2;
+    --accent:#F0972F; --red:#D94A4A; --blue:#3E7BD6; --green:#4CAF7A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html{scroll-padding-top:300px;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;
+    font-size:15px; line-height:1.5;
+    max-width:560px; margin:0 auto; padding-bottom:40px;
+  }
+  button{
+    background:var(--surface2); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:12px 10px; font-size:14px; cursor:pointer; font-family:inherit;
+    min-height:44px;
+  }
+  button:active{transform:translateY(1px); border-color:var(--accent);}
+  select, input[type=text], input[type=number]{
+    background:var(--bg); color:var(--text); border:1px solid var(--line);
+    border-radius:8px; padding:10px; font-size:15px; font-family:inherit; min-height:44px;
+  }
+
+  /* 折りたたみ */
+  details{border-bottom:1px solid var(--line);}
+  summary{
+    list-style:none; cursor:pointer; padding:13px 14px;
+    font-size:13px; font-weight:700; letter-spacing:.06em; color:var(--muted);
+    display:flex; align-items:center; gap:8px;
+  }
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:"▸"; color:var(--accent); transition:transform .15s;}
+  details[open] summary::before{transform:rotate(90deg);}
+  summary .sumInfo{margin-left:auto; font-weight:400; font-size:12px; color:var(--text);}
+  .dbody{padding:4px 14px 16px;}
+
+  .metaGrid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .metaGrid .full{grid-column:1/-1;}
+  .metaGrid label{display:block; font-size:11px; color:var(--muted); margin-bottom:3px;}
+  .metaGrid input{width:100%;}
+  .nameRow{display:flex; gap:6px;}
+  .nameRow input{flex:1; min-width:0;}
+  .nameRow select{width:96px;}
+
+  /* 固定エリア:動画+操作バー */
+  .stickyTop{
+    position:sticky; top:0; z-index:30; background:var(--bg);
+    border-bottom:1px solid var(--line); padding-bottom:6px;
+  }
+  .videoBox{
+    position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden;
+  }
+  .videoBox video, .videoBox #ytFrame{position:absolute; inset:0; width:100%; height:100%; border:0;}
+  .videoEmpty{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:13px; text-align:center; padding:16px;
+  }
+  .ctrlBar{
+    display:flex; align-items:center; gap:6px; padding:6px 8px 0; flex-wrap:nowrap; overflow-x:auto;
+  }
+  .ctrlBar .time{
+    font-variant-numeric:tabular-nums; font-size:20px; font-weight:700;
+    color:var(--accent); font-family:ui-monospace,Consolas,monospace; min-width:84px;
+  }
+  .ctrlBar button{padding:8px 10px; min-height:40px; font-size:13px; flex-shrink:0;}
+  .ctrlBar .play{min-width:52px; font-size:16px;}
+  .ctrlBar select{min-height:40px; padding:6px; font-size:13px;}
+
+  .srcTabs{display:flex; gap:6px; margin-bottom:10px;}
+  .srcTabs button{flex:1; padding:9px 4px; font-size:13px; border-radius:999px; min-height:40px;}
+  .srcTabs button.sel{background:var(--accent); border-color:var(--accent); color:#1A1206; font-weight:700;}
+  .srcPane{display:none;}
+  .srcPane.open{display:block;}
+  .srcPane .rowline{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .srcPane input[type=text]{flex:1; min-width:160px;}
+  .srcNote{font-size:11px; color:var(--muted); margin-top:6px;}
+
+  /* 入力パッド */
+  .pad{padding:10px 14px;}
+  .secLabel{font-size:11px; color:var(--muted); letter-spacing:.08em; margin:12px 0 6px; font-weight:600;}
+
+  .matchBar{display:flex; gap:8px; align-items:center;}
+  .matchBar .mlabel{font-size:14px; font-weight:700; color:var(--accent); flex:1;}
+  .matchBar button{padding:9px 12px; font-size:13px; min-height:40px;}
+  .matchBar button.sel{background:var(--accent); border-color:var(--accent); color:#1A1206; font-weight:700;}
+
+  .playerRow{display:flex; gap:8px; margin-top:10px;}
+  .playerRow button{
+    flex:1; padding:13px 6px; font-size:17px; font-weight:700; border-width:2px; border-radius:12px;
+    min-height:58px;
+  }
+  .stanceTag{display:block; font-size:11px; font-weight:400; opacity:.85;}
+  #btnRed{border-color:var(--red); color:var(--red);}
+  #btnBlue{border-color:var(--blue); color:var(--blue);}
+  #btnRed.sel{background:var(--red); color:#fff;}
+  #btnBlue.sel{background:var(--blue); color:#fff;}
+
+  .phaseRow{display:flex; gap:8px; margin-top:8px;}
+  .phaseRow button{flex:1; padding:11px; min-height:48px;}
+  .phaseRow button.sel{background:var(--accent); border-color:var(--accent); color:#1A1206; font-weight:700;}
+
+  .setupGrid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px;}
+  .setupGrid button{
+    padding:10px 4px; font-size:13px; border-radius:10px; min-height:46px;
+    border-style:dashed; color:var(--muted);
+  }
+  .techGrid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px;}
+  .techGrid button{padding:13px 6px; font-size:15px; border-radius:12px; min-height:56px;}
+
+  .targetRow{display:flex; gap:7px; flex-wrap:wrap;}
+  .targetRow button{padding:9px 14px; font-size:14px; border-radius:999px; min-height:44px;}
+
+  .resultRow{display:grid; grid-template-columns:repeat(3,1fr); gap:7px;}
+  .resultRow button{padding:12px 4px; font-size:14px; min-height:50px;}
+  .resultRow .pt{border-color:var(--green); color:var(--green);}
+  .resultRow .ng{border-color:var(--muted); color:var(--muted);}
+
+  .undoBar{display:flex; gap:8px; margin-top:10px;}
+  .undoBar button{flex:1; min-height:46px; font-size:13px;}
+
+  .pending{
+    margin-top:10px; padding:10px 12px; border-radius:10px; font-size:13px;
+    background:var(--surface2); border:1px dashed var(--line); color:var(--muted); min-height:40px;
+  }
+  .pending b{color:var(--text);}
+
+  /* ログ */
+  table{width:100%; border-collapse:collapse; font-size:12px;}
+  th,td{padding:7px 5px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap;}
+  th{color:var(--muted); font-weight:600; font-size:11px; position:sticky; top:0; background:var(--surface); z-index:1;}
+  .logWrap{max-height:330px; overflow:auto; border:1px solid var(--line); border-radius:10px;}
+  td .mini{padding:6px 10px; font-size:13px; border-radius:8px; min-height:36px;}
+  td.jump{color:var(--accent); text-decoration:underline; text-underline-offset:2px;}
+  tr.cur td{background:rgba(240,151,47,.12);}
+  .tagRed{color:var(--red); font-weight:700;}
+  .tagBlue{color:var(--blue); font-weight:700;}
+  .ok{color:var(--green);}
+  .miss{color:var(--muted);}
+
+  .filterBar{display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-bottom:10px;}
+  .filterBar select{flex:1; min-width:90px;}
+  .jumpRow{display:flex; gap:8px; margin:10px 0;}
+  .jumpRow button{flex:1; min-height:48px;}
+  .flabel{color:var(--muted); font-size:12px; text-align:center;}
+
+  .editor{
+    display:none; margin-top:10px; padding:12px; border:1px solid var(--accent); border-radius:10px;
+    background:var(--surface2);
+  }
+  .editor.open{display:block;}
+  .editor .erow{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
+  .editor label{font-size:11px; color:var(--muted); display:block; margin-bottom:2px;}
+  .editor input, .editor select{width:100%;}
+  .editor .btns{display:flex; gap:8px;}
+  .editor .btns button{flex:1;}
+
+  /* 分析 */
+  .analysis{margin-bottom:16px;}
+  .analysis h3{font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:600;}
+  .analysis .row{display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .analysis .row .n{color:var(--accent); font-variant-numeric:tabular-nums;}
+  .arrow{color:var(--muted);}
+  .matrixWrap{overflow:auto; max-height:300px; border:1px solid var(--line); border-radius:10px;}
+  .matrixWrap table{font-size:11px;}
+  .matrixWrap th{font-size:10px;}
+  .matrixWrap th.rowh{position:sticky; left:0; background:var(--surface); z-index:2;}
+  .matrixWrap td{text-align:center; min-width:32px;}
+  .rateBar{height:4px; background:var(--line); border-radius:2px; overflow:hidden; min-width:50px;}
+  .rateBar i{display:block; height:100%; background:var(--green);}
+
+  .btnGrid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .btnGrid button{min-height:50px;}
+  .badge{font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 12px;}
+
+  /* 設定モーダル */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:50;
+    align-items:flex-start; justify-content:center; padding:20px 12px; overflow:auto;
+  }
+  .overlay.open{display:flex;}
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:16px; max-width:560px; width:100%;
+  }
+  .card h2{font-size:14px; color:var(--accent); margin-bottom:10px;}
+  .card h3{font-size:12px; color:var(--muted); margin:12px 0 4px; font-weight:600;}
+  .card textarea{
+    width:100%; height:84px; background:var(--bg); color:var(--text);
+    border:1px solid var(--line); border-radius:10px; padding:10px; font-size:14px; font-family:inherit;
+  }
+  .cardFoot{margin-top:14px; display:flex; gap:8px;}
+  .cardFoot button{flex:1;}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
+</style>
+</head>
+<body>
+
+<!-- ① 試合情報 -->
+<details id="metaDetails" open>
+  <summary>試合情報<span class="sumInfo" id="metaSummary"></span></summary>
+  <div class="dbody">
+    <div class="metaGrid">
+      <div><label>大会名</label><input id="mTournament" type="text" placeholder="例:県総体"></div>
+      <div><label>年</label><input id="mYear" type="text" placeholder="2026"></div>
+      <div class="full"><label>階級・スタイル</label><input id="mClass" type="text" placeholder="FS 65kg"></div>
+      <div class="full"><label>動画URL / ファイル名</label><input id="mVideo" type="text" placeholder="自動入力されます"></div>
+      <div class="full">
+        <label>赤コーナー選手・構え</label>
+        <div class="nameRow">
+          <input id="mRedName" type="text" placeholder="選手名">
+          <select id="mRedStance"><option>右構え</option><option>左構え</option></select>
+        </div>
+      </div>
+      <div class="full">
+        <label>青コーナー選手・構え</label>
+        <div class="nameRow">
+          <input id="mBlueName" type="text" placeholder="選手名">
+          <select id="mBlueStance"><option>右構え</option><option>左構え</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+
+<!-- ② 動画ソース -->
+<details id="srcDetails" open>
+  <summary>動画ソース<span class="sumInfo" id="srcSummary">未選択</span></summary>
+  <div class="dbody">
+    <div class="srcTabs">
+      <button id="tabLocal" class="sel">端末の動画</button>
+      <button id="tabYT">YouTube</button>
+      <button id="tabTimer">タイマー</button>
+    </div>
+    <div class="srcPane open" id="paneLocal">
+      <div class="rowline">
+        <button id="btnPickVideo">動画を選択</button>
+        <span id="localName" style="font-size:12px; color:var(--muted);">未選択</span>
+        <input type="file" id="fileVideo" accept="video/*" style="display:none">
+      </div>
+      <div class="srcNote">カメラロール等から選択。動画は端末内で再生されるだけで送信されません。</div>
+    </div>
+    <div class="srcPane" id="paneYT">
+      <div class="rowline">
+        <input type="text" id="ytUrl" placeholder="YouTubeのURLを貼り付け">
+        <button id="btnLoadYT">読み込む</button>
+      </div>
+      <div class="srcNote">埋め込み不可の動画はタイマーモードで対応してください。</div>
+    </div>
+    <div class="srcPane" id="paneTimer">
+      <div class="srcNote">別アプリで動画を再生し、再生開始と同時に「▶」を押してください。±ボタンでズレを補正できます。</div>
+    </div>
+  </div>
+</details>
+
+<!-- 固定:動画+操作バー -->
+<div class="stickyTop">
+  <div class="videoBox" id="videoBox">
+    <div class="videoEmpty" id="videoEmpty">「動画ソース」から動画を選択してください</div>
+    <video id="localVideo" controls playsinline style="display:none"></video>
+    <div id="ytFrame" style="display:none"></div>
+  </div>
+  <div class="ctrlBar">
+    <span class="time" id="clockTime">00:00.0</span>
+    <button class="play" id="btnTimer">▶</button>
+    <button data-adj="-1">−1</button>
+    <button data-adj="-0.1">−0.1</button>
+    <button data-adj="0.1">+0.1</button>
+    <button data-adj="1">+1</button>
+    <select id="speedSel">
+      <option value="0.25">0.25x</option>
+      <option value="0.5">0.5x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.5">1.5x</option>
+    </select>
+    <button id="btnQuickSave" title="JSON保存">💾</button>
+  </div>
+</div>
+
+<!-- ③ 入力パッド -->
+<div class="pad">
+  <div class="matchBar">
+    <span class="mlabel" id="matchLabel">試合 1・P1</span>
+    <button id="p1" class="sel">P1</button>
+    <button id="p2">P2</button>
+    <button id="btnNextMatch">次の試合 →</button>
+  </div>
+
+  <div class="playerRow">
+    <button id="btnRed" class="sel">赤<span class="stanceTag" id="redStanceTag">右構え</span></button>
+    <button id="btnBlue">青<span class="stanceTag" id="blueStanceTag">右構え</span></button>
+  </div>
+
+  <div class="phaseRow">
+    <button id="phStand" class="sel">スタンド</button>
+    <button id="phGround">グラウンド</button>
+  </div>
+
+  <div class="secLabel">セットアップ(崩し・いなし)</div>
+  <div class="setupGrid" id="setupGrid"></div>
+
+  <div class="secLabel" id="techLabel">技 — スタンド</div>
+  <div class="techGrid" id="techGrid"></div>
+
+  <div class="secLabel">攻撃部位(直前の記録に付与・任意)</div>
+  <div class="targetRow" id="targetRow"></div>
+
+  <div class="secLabel">結果(直前の記録に付与)</div>
+  <div class="resultRow">
+    <button class="pt" data-res="成功" data-pt="1">成功 1点</button>
+    <button class="pt" data-res="成功" data-pt="2">成功 2点</button>
+    <button class="pt" data-res="成功" data-pt="4">成功 4点+</button>
+    <button class="ng" data-res="失敗" data-pt="0">失敗</button>
+    <button class="ng" data-res="不成立" data-pt="0">不成立</button>
+  </div>
+
+  <div class="undoBar">
+    <button id="btnUndo">↩ 直前を取り消し</button>
+    <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); flex:1;">
+      <input type="checkbox" id="chkAutoPause" checked>タグ時に自動一時停止
+    </label>
+  </div>
+
+  <div class="pending" id="pending">アクション → 部位(任意)→ 結果 の順にタップして記録します。</div>
+</div>
+
+<!-- ④ 記録ログ -->
+<details id="logDetails">
+  <summary>記録ログ<span class="sumInfo" id="evCount">0 件</span></summary>
+  <div class="dbody">
+    <div class="filterBar">
+      <select id="fPlayer"><option value="all">選手: 全て</option><option value="赤">赤</option><option value="青">青</option></select>
+      <select id="fTech"><option value="all">アクション: 全て</option></select>
+      <select id="fResult"><option value="all">結果: 全て</option><option value="成功">成功</option><option value="失敗">失敗</option><option value="不成立">不成立</option></select>
+    </div>
+    <div class="jumpRow">
+      <button id="btnJumpPrev">◀ 前の場面</button>
+      <button id="btnJumpNext">次の場面 ▶</button>
+    </div>
+    <div class="flabel" id="jumpInfo"></div>
+    <div class="logWrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>試</th><th>P</th><th>タイム</th><th>選手</th><th>アクション</th><th>部位</th><th>結果</th><th>点</th><th></th><th></th></tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+
+    <div class="editor" id="editorBox">
+      <h2 style="font-size:13px; color:var(--accent); margin-bottom:8px;">記録の修正 <span id="editIdxLabel"></span></h2>
+      <div class="erow">
+        <div><label>試合</label><input type="number" id="eMatch" min="1"></div>
+        <div><label>ピリオド</label><input type="number" id="ePeriod" min="1" max="2"></div>
+        <div><label>タイム(秒)</label><input type="number" id="eTime" step="0.1" min="0"></div>
+        <div><label>選手</label><select id="ePlayer"><option>赤</option><option>青</option></select></div>
+        <div><label>構え</label><select id="eStance"><option>右構え</option><option>左構え</option></select></div>
+        <div><label>局面</label><select id="ePhase"><option>スタンド</option><option>グラウンド</option></select></div>
+        <div><label>種別</label><select id="eKind"><option>技</option><option>セットアップ</option></select></div>
+        <div><label>アクション</label><select id="eTech"></select></div>
+        <div><label>部位</label><select id="eTarget"></select></div>
+        <div><label>結果</label><select id="eResult"><option value="">—</option><option>成功</option><option>失敗</option><option>不成立</option></select></div>
+        <div><label>得点</label><input type="number" id="ePoints" min="0" max="10"></div>
+      </div>
+      <div class="btns">
+        <button id="btnEditSave">保存</button>
+        <button id="btnEditCancel">キャンセル</button>
+      </div>
+    </div>
+  </div>
+</details>
+
+<!-- ⑤ 分析 -->
+<details>
+  <summary>分析(成功率・連続技・遷移行列)</summary>
+  <div class="dbody">
+    <div class="analysis">
+      <h3>アクション別 試行数・成功率</h3>
+      <div class="logWrap" style="max-height:260px;">
+        <table>
+          <thead><tr><th>アクション</th><th>試行</th><th>成功</th><th>率</th><th></th><th>平均点</th></tr></thead>
+          <tbody id="statBody"><tr><td colspan="6" style="color:var(--muted)">まだデータがありません</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="analysis">
+      <h3>連続パターン(同一選手・同一試合・20秒以内)</h3>
+      <div id="seqBox"><div class="row"><span style="color:var(--muted)">2手以上の連鎖が記録されると表示されます</span></div></div>
+    </div>
+    <div class="analysis">
+      <h3>遷移行列(行=直前 → 列=次)</h3>
+      <div class="matrixWrap" id="matrixBox"><table><tbody><tr><td style="color:var(--muted); padding:10px;">連鎖データが貯まると表示されます</td></tr></tbody></table></div>
+    </div>
+  </div>
+</details>
+
+<!-- ⑥ 統合集計 -->
+<details>
+  <summary>統合集計(複数セッション横断)</summary>
+  <div class="dbody">
+    <div class="btnGrid" style="margin-bottom:10px;">
+      <button id="btnAggFiles">JSONを追加</button>
+      <button id="btnAggCurrent">現セッションを追加</button>
+      <input type="file" id="fileAgg" accept=".json" multiple style="display:none">
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+      <span class="badge" id="aggBadge">0 ファイル / 0 イベント</span>
+      <button id="btnAggClear" style="min-height:38px; padding:6px 14px; font-size:12px;">クリア</button>
+    </div>
+    <div class="filterBar">
+      <select id="aYear"><option value="all">年: 全て</option></select>
+      <select id="aTour"><option value="all">大会: 全て</option></select>
+      <select id="aClassSel"><option value="all">階級: 全て</option></select>
+      <select id="aName"><option value="all">選手名: 全て</option></select>
+      <select id="aStance"><option value="all">構え: 全て</option><option>右構え</option><option>左構え</option></select>
+    </div>
+    <div class="flabel" id="aggCount" style="margin-bottom:10px;"></div>
+    <div class="analysis">
+      <h3>アクション別 試行数・成功率</h3>
+      <div class="logWrap" style="max-height:260px;">
+        <table>
+          <thead><tr><th>アクション</th><th>試行</th><th>成功</th><th>率</th><th></th><th>平均点</th></tr></thead>
+          <tbody id="aggStatBody"><tr><td colspan="6" style="color:var(--muted)">ファイルを追加してください</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="analysis">
+      <h3>連続パターン</h3>
+      <div id="aggSeqBox"><div class="row"><span style="color:var(--muted)">—</span></div></div>
+    </div>
+    <div class="analysis">
+      <h3>遷移行列</h3>
+      <div class="matrixWrap" id="aggMatrixBox"><table><tbody><tr><td style="color:var(--muted); padding:10px;">—</td></tr></tbody></table></div>
+    </div>
+  </div>
+</details>
+
+<!-- ⑦ 保存・設定 -->
+<details>
+  <summary>保存・書き出し・設定</summary>
+  <div class="dbody">
+    <div class="btnGrid">
+      <button id="btnJSON">保存(JSON)</button>
+      <button id="btnLoadSession">読み込み</button>
+      <button id="btnCSV">CSV書き出し</button>
+      <button id="btnLinks">場面リンク</button>
+      <button id="btnSettings" style="grid-column:1/-1;">⚙ 技・アクションの編集</button>
+      <input type="file" id="fileSession" accept=".json" style="display:none">
+    </div>
+    <div class="srcNote" style="margin-top:10px;">保存したJSONはPC版(PRO2)とそのまま相互利用できます。スマホでは自動上書き保存が使えないため、区切りごとに「保存(JSON)」または上部の💾を押してください。保存ファイルは端末のダウンロード/ファイルアプリに入ります。</div>
+  </div>
+</details>
+
+<!-- 設定モーダル -->
+<div class="overlay" id="settingsOverlay">
+  <div class="card">
+    <h2>技・アクションの編集(1行に1つ)</h2>
+    <h3>スタンドの技</h3>
+    <textarea id="standEdit"></textarea>
+    <h3>グラウンドの技</h3>
+    <textarea id="groundEdit"></textarea>
+    <h3>セットアップ(崩し・いなし等)</h3>
+    <textarea id="setupEdit"></textarea>
+    <h3>攻撃部位</h3>
+    <textarea id="targetEdit"></textarea>
+    <div class="cardFoot">
+      <button id="btnApplyLists">適用</button>
+      <button id="btnDefaultLists">初期に戻す</button>
+      <button id="btnSettingsClose">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ===== 初期データ(PC版PRO2と互換) ===== */
+const DEF_STAND = ["片足タックル","両足タックル","タックル切り","がぶり","がぶり返し","投げ技","場外押し出し","カウンター","飛びつき"];
+const DEF_GROUND = ["ローリング","アンクルホールド","リフト","股裂き","ニアフォール(返し)","防御(ブロック)"];
+const DEF_SETUP = ["崩し","いなし","差し(組み手)","スナップダウン","手首取り","押し込み"];
+const DEF_TARGET = ["右手","左手","右足","左足","首","体幹"];
+
+let standTechs = DEF_STAND.slice();
+let groundTechs = DEF_GROUND.slice();
+let setups = DEF_SETUP.slice();
+let targets = DEF_TARGET.slice();
+
+let events = [];
+let player = "赤";
+let phase  = "スタンド";
+let period = 1;
+let matchNo = 1;
+let editIdx = -1;
+let jumpPtr = -1;
+let wasPlaying = false;
+let dirty = false;
+
+function curTechList(){ return phase==="スタンド" ? standTechs : groundTechs; }
+
+/* ===== タイム源 ===== */
+let mode = "local";
+const localVideo = document.getElementById("localVideo");
+let ytPlayer = null, ytApiLoading = false;
+let running = false, baseSec = 0, startEpoch = 0;
+
+const clockEl = document.getElementById("clockTime");
+const btnTimer = document.getElementById("btnTimer");
+
+function fmt(s){
+  s = Math.max(0,s);
+  const m = Math.floor(s/60), r = s - m*60;
+  return String(m).padStart(2,"0") + ":" + (r<10?"0":"") + r.toFixed(1);
+}
+function timerNow(){ return running ? baseSec + (Date.now()-startEpoch)/1000 : baseSec; }
+function getTime(){
+  if(mode==="local" && localVideo.src) return localVideo.currentTime;
+  if(mode==="yt" && ytPlayer && typeof ytPlayer.getCurrentTime==="function"){
+    try{ return ytPlayer.getCurrentTime() || 0; }catch(e){ return 0; }
+  }
+  return timerNow();
+}
+function isPlaying(){
+  if(mode==="local" && localVideo.src) return !localVideo.paused;
+  if(mode==="yt" && ytPlayer && typeof ytPlayer.getPlayerState==="function"){
+    try{ return ytPlayer.getPlayerState()===1; }catch(e){ return false; }
+  }
+  return running;
+}
+function pauseAll(){
+  if(mode==="local" && localVideo.src){ localVideo.pause(); return; }
+  if(mode==="yt" && ytPlayer){ try{ ytPlayer.pauseVideo(); }catch(e){} return; }
+  if(running){ baseSec = timerNow(); running = false; }
+}
+function playAll(){
+  if(mode==="local" && localVideo.src){ localVideo.play(); return; }
+  if(mode==="yt" && ytPlayer){ try{ ytPlayer.playVideo(); }catch(e){} return; }
+  if(!running){ startEpoch = Date.now(); running = true; }
+}
+function togglePlay(){ if(isPlaying()) pauseAll(); else playAll(); }
+function seekTo(t){
+  t = Math.max(0,t);
+  if(mode==="local" && localVideo.src){ localVideo.currentTime = t; return; }
+  if(mode==="yt" && ytPlayer && typeof ytPlayer.seekTo==="function"){ try{ ytPlayer.seekTo(t,true); }catch(e){} return; }
+  const wasRun = running;
+  baseSec = t;
+  if(wasRun) startEpoch = Date.now();
+}
+setInterval(()=>{
+  clockEl.textContent = fmt(getTime());
+  btnTimer.textContent = isPlaying() ? "⏸" : "▶";
+}, 100);
+
+btnTimer.addEventListener("click", togglePlay);
+document.querySelectorAll("[data-adj]").forEach(b=>{
+  b.addEventListener("click", ()=>seekTo(getTime() + Number(b.dataset.adj)));
+});
+document.getElementById("speedSel").addEventListener("change", e=>{
+  const sp = Number(e.target.value);
+  if(mode==="local" && localVideo.src) localVideo.playbackRate = sp;
+  if(mode==="yt" && ytPlayer && typeof ytPlayer.setPlaybackRate==="function"){ try{ ytPlayer.setPlaybackRate(sp); }catch(e2){} }
+});
+
+/* ===== ソース切替 ===== */
+const tabs = {local:document.getElementById("tabLocal"), yt:document.getElementById("tabYT"), timer:document.getElementById("tabTimer")};
+const panes = {local:document.getElementById("paneLocal"), yt:document.getElementById("paneYT"), timer:document.getElementById("paneTimer")};
+const videoEmpty = document.getElementById("videoEmpty");
+const ytFrame = document.getElementById("ytFrame");
+const videoBox = document.getElementById("videoBox");
+const srcDetails = document.getElementById("srcDetails");
+const srcSummary = document.getElementById("srcSummary");
+
+function setMode(m){
+  mode = m;
+  Object.keys(tabs).forEach(k=>{
+    tabs[k].classList.toggle("sel", k===m);
+    panes[k].classList.toggle("open", k===m);
+  });
+  localVideo.style.display = (m==="local" && localVideo.src) ? "block" : "none";
+  ytFrame.style.display = (m==="yt") ? "block" : "none";
+  const hasVideo = (m==="local" && localVideo.src) || (m==="yt" && ytPlayer);
+  videoEmpty.style.display = hasVideo ? "none" : "flex";
+  videoBox.style.display = (m==="timer") ? "none" : "block";
+  videoEmpty.textContent = m==="yt"
+    ? "「動画ソース」のYouTube欄にURLを貼り付けてください"
+    : "「動画ソース」から動画を選択してください";
+  srcSummary.textContent = m==="timer" ? "タイマー" : (hasVideo ? (m==="local"?"端末の動画":"YouTube") : "未選択");
+}
+tabs.local.addEventListener("click", ()=>setMode("local"));
+tabs.yt.addEventListener("click", ()=>setMode("yt"));
+tabs.timer.addEventListener("click", ()=>setMode("timer"));
+
+document.getElementById("btnPickVideo").addEventListener("click", ()=>document.getElementById("fileVideo").click());
+document.getElementById("fileVideo").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  if(localVideo.src) URL.revokeObjectURL(localVideo.src);
+  localVideo.src = URL.createObjectURL(f);
+  document.getElementById("localName").textContent = f.name;
+  document.getElementById("mVideo").value = f.name;
+  setMode("local");
+  srcDetails.open = false;
+  document.getElementById("metaDetails").open = false;
+});
+
+function extractYTId(url){
+  const m = String(url||"").match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function loadYTApi(cb){
+  if(window.YT && window.YT.Player){ cb(); return; }
+  if(!ytApiLoading){
+    ytApiLoading = true;
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(s);
+  }
+  const prev = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = ()=>{ if(prev) prev(); cb(); };
+}
+document.getElementById("btnLoadYT").addEventListener("click", ()=>{
+  const url = document.getElementById("ytUrl").value.trim();
+  const id = extractYTId(url);
+  if(!id){ alert("YouTubeのURLを認識できませんでした。動画ページのURLをそのまま貼り付けてください。"); return; }
+  document.getElementById("mVideo").value = url;
+  loadYTApi(()=>{
+    const done = ()=>{ setMode("yt"); srcDetails.open = false; document.getElementById("metaDetails").open = false; };
+    if(ytPlayer){ try{ ytPlayer.loadVideoById(id); }catch(e){} done(); return; }
+    ytPlayer = new YT.Player("ytFrame", {
+      videoId: id,
+      playerVars: {rel:0, playsinline:1},
+      events: {
+        onReady: done,
+        onError: ()=>alert("この動画は読み込めませんでした(埋め込み不可の可能性)。タイマーモードをご利用ください。")
+      }
+    });
+    done();
+  });
+});
+
+/* ===== 選手・構え・局面・試合 ===== */
+const btnRed = document.getElementById("btnRed");
+const btnBlue = document.getElementById("btnBlue");
+function setPlayer(p){
+  player = p;
+  btnRed.classList.toggle("sel", p==="赤");
+  btnBlue.classList.toggle("sel", p==="青");
+}
+btnRed.addEventListener("click", ()=>setPlayer("赤"));
+btnBlue.addEventListener("click", ()=>setPlayer("青"));
+
+const mRedStance = document.getElementById("mRedStance");
+const mBlueStance = document.getElementById("mBlueStance");
+function updateStanceTags(){
+  document.getElementById("redStanceTag").textContent = mRedStance.value;
+  document.getElementById("blueStanceTag").textContent = mBlueStance.value;
+}
+mRedStance.addEventListener("change", ()=>{ updateStanceTags(); markDirty(); });
+mBlueStance.addEventListener("change", ()=>{ updateStanceTags(); markDirty(); });
+function curStance(){ return player==="赤" ? mRedStance.value : mBlueStance.value; }
+function curName(){
+  return player==="赤"
+    ? document.getElementById("mRedName").value
+    : document.getElementById("mBlueName").value;
+}
+["mRedName","mBlueName","mTournament","mYear"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", updateMetaSummary);
+});
+function updateMetaSummary(){
+  const r = document.getElementById("mRedName").value || "赤";
+  const b = document.getElementById("mBlueName").value || "青";
+  document.getElementById("metaSummary").textContent = r + " vs " + b;
+}
+
+const phStand = document.getElementById("phStand");
+const phGround = document.getElementById("phGround");
+function setPhase(p){
+  phase = p;
+  phStand.classList.toggle("sel", p==="スタンド");
+  phGround.classList.toggle("sel", p==="グラウンド");
+  renderPads();
+}
+phStand.addEventListener("click", ()=>setPhase("スタンド"));
+phGround.addEventListener("click", ()=>setPhase("グラウンド"));
+
+function setPeriod(n){
+  period = Math.min(2, Math.max(1, n));
+  [1,2].forEach(i=>document.getElementById("p"+i).classList.toggle("sel", i===period));
+  updateMatchLabel();
+}
+[1,2].forEach(i=>document.getElementById("p"+i).addEventListener("click", ()=>setPeriod(i)));
+function updateMatchLabel(){
+  document.getElementById("matchLabel").textContent = "試合 " + matchNo + "・P" + period;
+}
+document.getElementById("btnNextMatch").addEventListener("click", ()=>{
+  matchNo++; setPeriod(1);
+  document.getElementById("pending").innerHTML =
+    "試合 <b>" + matchNo + "</b> に切り替えました。必要なら「試合情報」で選手名・構えを更新してください。";
+  updateMatchLabel();
+});
+
+/* ===== 入力パッド描画 ===== */
+function makeBtn(label, onClick, cls){
+  const b = document.createElement("button");
+  b.textContent = label;
+  if(cls) b.className = cls;
+  b.addEventListener("click", onClick);
+  return b;
+}
+function renderPads(){
+  const sg = document.getElementById("setupGrid");
+  sg.innerHTML = "";
+  setups.forEach(t=>sg.appendChild(makeBtn(t, ()=>logAction(t,"セットアップ"))));
+  const tg = document.getElementById("techGrid");
+  tg.innerHTML = "";
+  curTechList().forEach(t=>tg.appendChild(makeBtn(t, ()=>logAction(t,"技"))));
+  document.getElementById("techLabel").textContent = "技 — " + phase;
+  const tr = document.getElementById("targetRow");
+  tr.innerHTML = "";
+  targets.forEach(t=>tr.appendChild(makeBtn(t, ()=>setTarget(t))));
+  const fTech = document.getElementById("fTech");
+  const cur = fTech.value;
+  fTech.innerHTML = '<option value="all">アクション: 全て</option>';
+  const all = Array.from(new Set(standTechs.concat(groundTechs, setups, events.map(e=>e.tech))));
+  all.forEach(t=>{
+    const o = document.createElement("option"); o.value = t; o.textContent = t; fTech.appendChild(o);
+  });
+  if(Array.from(fTech.options).some(o=>o.value===cur)) fTech.value = cur;
+}
+
+/* ===== 記録 ===== */
+const pendingEl = document.getElementById("pending");
+const chkAutoPause = document.getElementById("chkAutoPause");
+
+function logAction(name, kind){
+  if(chkAutoPause.checked && isPlaying()){ wasPlaying = true; pauseAll(); }
+  events.push({
+    m:matchNo, p:period, t:+getTime().toFixed(1),
+    player, name:curName(), stance:curStance(),
+    phase, kind, tech:name, target:"", result:"", points:0
+  });
+  pendingEl.innerHTML = "記録: <b>" + fmt(events[events.length-1].t) + " " + player + " " + name + "</b> → 部位(任意)→ 結果";
+  markDirty(); render();
+}
+function setTarget(part){
+  if(!events.length) return;
+  const ev = events[events.length-1];
+  ev.target = part;
+  pendingEl.innerHTML = "部位を付与: <b>" + ev.tech + " → " + part + "</b> → 結果へ";
+  markDirty(); render();
+}
+function applyResult(res, pt){
+  if(!events.length) return;
+  const ev = events[events.length-1];
+  ev.result = res; ev.points = pt;
+  pendingEl.innerHTML = "結果を付与: <b>" + ev.tech + (ev.target? "("+ev.target+")":"") + " → " + ev.result + (ev.points? " "+ev.points+"点":"") + "</b>";
+  if(chkAutoPause.checked && wasPlaying){ playAll(); }
+  wasPlaying = false;
+  markDirty(); render();
+}
+document.querySelectorAll(".resultRow button").forEach(b=>{
+  b.addEventListener("click", ()=>applyResult(b.dataset.res, Number(b.dataset.pt)));
+});
+document.getElementById("btnUndo").addEventListener("click", ()=>{
+  if(!events.length) return;
+  const ev = events.pop();
+  pendingEl.innerHTML = "取り消し: <b>" + ev.tech + "</b>";
+  markDirty(); render();
+});
+
+/* ===== フィルタと表示 ===== */
+const fPlayer = document.getElementById("fPlayer");
+const fTech = document.getElementById("fTech");
+const fResult = document.getElementById("fResult");
+[fPlayer, fTech, fResult].forEach(s=>s.addEventListener("change", ()=>{ jumpPtr = -1; render(); }));
+
+function passFilter(ev){
+  if(fPlayer.value!=="all" && ev.player!==fPlayer.value) return false;
+  if(fTech.value!=="all" && ev.tech!==fTech.value) return false;
+  if(fResult.value!=="all" && ev.result!==fResult.value) return false;
+  return true;
+}
+function visibleList(){
+  const out = [];
+  events.forEach((ev,i)=>{ if(passFilter(ev)) out.push({ev,i}); });
+  return out;
+}
+
+const logBody = document.getElementById("logBody");
+function render(){
+  const vis = visibleList();
+  document.getElementById("evCount").textContent = events.length + " 件" + (vis.length!==events.length ? "(表示 "+vis.length+")" : "");
+  logBody.innerHTML = "";
+  vis.forEach((v, vi)=>{
+    const ev = v.ev;
+    const tr = document.createElement("tr");
+    if(vi===jumpPtr) tr.classList.add("cur");
+    const resCls = ev.result==="成功" ? "ok" : (ev.result ? "miss" : "");
+    tr.innerHTML =
+      "<td>"+(v.i+1)+"</td><td>"+ev.m+"</td><td>"+ev.p+"</td>"+
+      "<td class='jump' data-t='"+ev.t+"'>"+fmt(ev.t)+"</td>"+
+      "<td class='"+(ev.player==="赤"?"tagRed":"tagBlue")+"'>"+ev.player+"</td>"+
+      "<td>"+ev.tech+"</td><td>"+(ev.target||"")+"</td>"+
+      "<td class='"+resCls+"'>"+(ev.result||"—")+"</td>"+
+      "<td>"+(ev.points||"")+"</td>"+
+      "<td><button class='mini edit' data-i='"+v.i+"'>✎</button></td>"+
+      "<td><button class='mini del' data-i='"+v.i+"'>×</button></td>";
+    logBody.appendChild(tr);
+  });
+  logBody.querySelectorAll(".del").forEach(b=>{
+    b.addEventListener("click", ()=>{ events.splice(Number(b.dataset.i),1); jumpPtr=-1; markDirty(); render(); });
+  });
+  logBody.querySelectorAll(".edit").forEach(b=>{
+    b.addEventListener("click", ()=>openEditor(Number(b.dataset.i)));
+  });
+  logBody.querySelectorAll(".jump").forEach(c=>{
+    c.addEventListener("click", ()=>seekTo(Number(c.dataset.t)));
+  });
+  document.getElementById("jumpInfo").textContent = vis.length ? (jumpPtr>=0 ? (jumpPtr+1)+" / "+vis.length+" 場面" : vis.length+" 場面") : "";
+  renderPads();
+  renderAnalysis(events, "statBody", "seqBox", "matrixBox");
+}
+
+function jumpStep(dir){
+  const vis = visibleList();
+  if(!vis.length) return;
+  jumpPtr = (jumpPtr + dir + vis.length) % vis.length;
+  seekTo(Math.max(0, vis[jumpPtr].ev.t - 2));
+  playAll();
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+document.getElementById("btnJumpNext").addEventListener("click", ()=>jumpStep(1));
+document.getElementById("btnJumpPrev").addEventListener("click", ()=>jumpStep(-1));
+
+/* ===== 行エディタ ===== */
+const editorBox = document.getElementById("editorBox");
+function openEditor(i){
+  editIdx = i;
+  const ev = events[i];
+  document.getElementById("editIdxLabel").textContent = "(#" + (i+1) + ")";
+  document.getElementById("eMatch").value = ev.m;
+  document.getElementById("ePeriod").value = ev.p;
+  document.getElementById("eTime").value = ev.t;
+  document.getElementById("ePlayer").value = ev.player;
+  document.getElementById("eStance").value = ev.stance || "右構え";
+  document.getElementById("ePhase").value = ev.phase;
+  document.getElementById("eKind").value = ev.kind || "技";
+  const eTech = document.getElementById("eTech");
+  eTech.innerHTML = "";
+  Array.from(new Set(standTechs.concat(groundTechs, setups, [ev.tech]))).forEach(t=>{
+    const o=document.createElement("option"); o.value=t; o.textContent=t; eTech.appendChild(o);
+  });
+  eTech.value = ev.tech;
+  const eTarget = document.getElementById("eTarget");
+  eTarget.innerHTML = '<option value="">—</option>';
+  Array.from(new Set(targets.concat(ev.target? [ev.target]:[]))).forEach(t=>{
+    const o=document.createElement("option"); o.value=t; o.textContent=t; eTarget.appendChild(o);
+  });
+  eTarget.value = ev.target || "";
+  document.getElementById("eResult").value = ev.result;
+  document.getElementById("ePoints").value = ev.points;
+  editorBox.classList.add("open");
+  editorBox.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+document.getElementById("btnEditSave").addEventListener("click", ()=>{
+  if(editIdx<0 || !events[editIdx]) return;
+  const ev = events[editIdx];
+  ev.m = Math.max(1, Number(document.getElementById("eMatch").value)||1);
+  ev.p = Math.min(2, Math.max(1, Number(document.getElementById("ePeriod").value)||1));
+  ev.t = Math.max(0, Number(document.getElementById("eTime").value)||0);
+  ev.player = document.getElementById("ePlayer").value;
+  ev.stance = document.getElementById("eStance").value;
+  ev.name = ev.player==="赤" ? document.getElementById("mRedName").value : document.getElementById("mBlueName").value;
+  ev.phase = document.getElementById("ePhase").value;
+  ev.kind = document.getElementById("eKind").value;
+  ev.tech = document.getElementById("eTech").value;
+  ev.target = document.getElementById("eTarget").value;
+  ev.result = document.getElementById("eResult").value;
+  ev.points = Math.max(0, Number(document.getElementById("ePoints").value)||0);
+  editorBox.classList.remove("open");
+  editIdx = -1;
+  markDirty(); render();
+});
+document.getElementById("btnEditCancel").addEventListener("click", ()=>{
+  editorBox.classList.remove("open"); editIdx = -1;
+});
+
+/* ===== 分析(共用) ===== */
+function chains(evs){
+  const groups = {};
+  evs.forEach(e=>{
+    const key = (e._src||"") + "|" + e.m + "|" + e.player;
+    (groups[key] = groups[key] || []).push(e);
+  });
+  const pairs = [];
+  Object.values(groups).forEach(arr=>{
+    arr.sort((a,b)=>a.t-b.t);
+    for(let i=1;i<arr.length;i++){
+      const gap = arr[i].t - arr[i-1].t;
+      if(gap>=0 && gap<=20) pairs.push([arr[i-1].tech, arr[i].tech]);
+    }
+  });
+  return pairs;
+}
+function renderAnalysis(evs, statId, seqId, matrixId){
+  const st = {};
+  evs.forEach(e=>{
+    const s = st[e.tech] = st[e.tech] || {n:0, ok:0, pts:0};
+    s.n++;
+    if(e.result==="成功"){ s.ok++; s.pts += (e.points||0); }
+  });
+  const statBody = document.getElementById(statId);
+  const rows = Object.entries(st).sort((a,b)=>b[1].n-a[1].n);
+  statBody.innerHTML = rows.length ? rows.map(([t,s])=>{
+    const rate = s.n ? Math.round(100*s.ok/s.n) : 0;
+    const avg = s.ok ? (s.pts/s.ok).toFixed(1) : "—";
+    return "<tr><td>"+t+"</td><td>"+s.n+"</td><td>"+s.ok+"</td><td>"+rate+"%</td>"+
+      "<td><div class='rateBar'><i style='width:"+rate+"%'></i></div></td><td>"+avg+"</td></tr>";
+  }).join("") : "<tr><td colspan='6' style='color:var(--muted)'>まだデータがありません</td></tr>";
+
+  const pairs = chains(evs);
+  const pc = {};
+  pairs.forEach(p=>{ const k = p[0]+"→"+p[1]; pc[k] = (pc[k]||0)+1; });
+  const seqBox = document.getElementById(seqId);
+  const pr = Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  seqBox.innerHTML = pr.length
+    ? pr.map(([k,n])=>{
+        const parts = k.split("→");
+        return "<div class='row'><span>"+parts[0]+" <span class='arrow'>→</span> "+parts[1]+"</span><span class='n'>"+n+"</span></div>";
+      }).join("")
+    : "<div class='row'><span style='color:var(--muted)'>2手以上の連鎖が記録されると表示されます</span></div>";
+
+  const matrixBox = document.getElementById(matrixId);
+  if(!pairs.length){
+    matrixBox.innerHTML = "<table><tbody><tr><td style='color:var(--muted); padding:10px;'>連鎖データが貯まると表示されます</td></tr></tbody></table>";
+    return;
+  }
+  const freqAll = {};
+  pairs.forEach(p=>{ freqAll[p[0]]=(freqAll[p[0]]||0)+1; freqAll[p[1]]=(freqAll[p[1]]||0)+1; });
+  const list = Object.entries(freqAll).sort((a,b)=>b[1]-a[1]).slice(0,12).map(x=>x[0]);
+  const mat = {};
+  let maxN = 1;
+  pairs.forEach(p=>{
+    if(!list.includes(p[0]) || !list.includes(p[1])) return;
+    mat[p[0]] = mat[p[0]] || {};
+    mat[p[0]][p[1]] = (mat[p[0]][p[1]]||0)+1;
+    if(mat[p[0]][p[1]] > maxN) maxN = mat[p[0]][p[1]];
+  });
+  let html = "<table><thead><tr><th class='rowh'>直前\\次</th>";
+  list.forEach(t=>{ html += "<th>"+t+"</th>"; });
+  html += "</tr></thead><tbody>";
+  list.forEach(a=>{
+    html += "<tr><th class='rowh'>"+a+"</th>";
+    list.forEach(b=>{
+      const n = (mat[a] && mat[a][b]) || 0;
+      const alpha = n ? (0.15 + 0.65*(n/maxN)) : 0;
+      html += "<td style='background:rgba(240,151,47,"+alpha.toFixed(2)+")'>"+(n||"")+"</td>";
+    });
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
+  matrixBox.innerHTML = html;
+}
+
+/* ===== メタ・保存 ===== */
+function meta(){
+  return {
+    tournament: document.getElementById("mTournament").value,
+    year: document.getElementById("mYear").value,
+    wclass: document.getElementById("mClass").value,
+    video: document.getElementById("mVideo").value,
+    redName: document.getElementById("mRedName").value,
+    blueName: document.getElementById("mBlueName").value,
+    redStance: mRedStance.value,
+    blueStance: mBlueStance.value
+  };
+}
+function setMeta(m){
+  document.getElementById("mTournament").value = m.tournament||"";
+  document.getElementById("mYear").value = m.year||"";
+  document.getElementById("mClass").value = m.wclass||"";
+  document.getElementById("mVideo").value = m.video||"";
+  document.getElementById("mRedName").value = m.redName||"";
+  document.getElementById("mBlueName").value = m.blueName||"";
+  if(m.redStance) mRedStance.value = m.redStance;
+  if(m.blueStance) mBlueStance.value = m.blueStance;
+  updateStanceTags(); updateMetaSummary();
+}
+function sessionData(){
+  return {meta:meta(), standTechs, groundTechs, setups, targets, events, matchNo, period, version:2};
+}
+function download(name, text, type){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], {type}));
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function markDirty(){ dirty = true; }
+function saveJSON(){
+  download("wrestling_session.json", JSON.stringify(sessionData(), null, 1), "application/json");
+  dirty = false;
+  pendingEl.innerHTML = "セッションを<b>JSON保存</b>しました(ダウンロード/ファイルアプリ内)。";
+}
+document.getElementById("btnJSON").addEventListener("click", saveJSON);
+document.getElementById("btnQuickSave").addEventListener("click", saveJSON);
+
+document.getElementById("btnCSV").addEventListener("click", ()=>{
+  const m = meta();
+  const head = ["大会","年","階級","動画","試合No","ピリオド","タイム秒","タイム","選手色","選手名","構え","局面","種別","アクション","部位","結果","得点","直前アクション(同選手・同試合20秒以内)"];
+  const rows = events.map((e,i)=>{
+    let prev = "";
+    for(let j=i-1;j>=0;j--){
+      if(events[j].player===e.player && events[j].m===e.m){
+        if(e.t - events[j].t <= 20 && e.t - events[j].t >= 0) prev = events[j].tech;
+        break;
+      }
+    }
+    return [m.tournament,m.year,m.wclass,m.video,e.m,e.p,e.t,fmt(e.t),e.player,e.name||"",e.stance||"",e.phase,e.kind||"技",e.tech,e.target||"",e.result,e.points,prev]
+      .map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",");
+  });
+  download("wrestling_tags.csv", "\uFEFF"+head.join(",")+"\n"+rows.join("\n"), "text/csv");
+});
+
+document.getElementById("btnLinks").addEventListener("click", ()=>{
+  if(!events.length){ alert("記録がありません。"); return; }
+  const m = meta();
+  const id = extractYTId(m.video);
+  const lines = [];
+  lines.push("【場面リスト】" + (m.tournament||"") + " " + (m.year||"") + " " + (m.wclass||""));
+  let lastMatch = 0;
+  events.forEach(e=>{
+    if(e.m!==lastMatch){ lines.push(""); lines.push("--- 試合 " + e.m + " ---"); lastMatch = e.m; }
+    const tag = fmt(e.t) + " " + e.player + (e.name? "("+e.name+")":"") + " " + e.phase + " " +
+      e.tech + (e.target? "["+e.target+"]":"") +
+      (e.result? " → " + e.result + (e.points? " "+e.points+"点":"") : "");
+    if(id){
+      const sec = Math.max(0, Math.floor(e.t - 3));
+      lines.push(tag + "  https://youtu.be/" + id + "?t=" + sec);
+    }else{
+      lines.push(tag);
+    }
+  });
+  const text = lines.join("\n");
+  if(navigator.share){
+    navigator.share({title:"場面リスト", text}).catch(()=>{
+      download("scene_links.txt", text, "text/plain");
+    });
+  }else{
+    download("scene_links.txt", text, "text/plain");
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).catch(()=>{});
+    }
+  }
+});
+
+document.getElementById("btnLoadSession").addEventListener("click", ()=>document.getElementById("fileSession").click());
+document.getElementById("fileSession").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const d = JSON.parse(r.result);
+      setMeta(d.meta||{});
+      standTechs = Array.isArray(d.standTechs)&&d.standTechs.length ? d.standTechs
+                 : (Array.isArray(d.techs)&&d.techs.length ? d.techs : standTechs);
+      groundTechs = Array.isArray(d.groundTechs)&&d.groundTechs.length ? d.groundTechs : groundTechs;
+      setups = Array.isArray(d.setups)&&d.setups.length ? d.setups : setups;
+      targets = Array.isArray(d.targets)&&d.targets.length ? d.targets : targets;
+      events = Array.isArray(d.events) ? d.events.map(ev=>({
+        m:ev.m||1, p:Math.min(2, ev.p||1), t:ev.t||0,
+        player:ev.player||"赤", name:ev.name||"", stance:ev.stance||"",
+        phase:ev.phase||"スタンド", kind:ev.kind||"技", tech:ev.tech||"",
+        target:ev.target||"", result:ev.result||"", points:ev.points||0
+      })) : [];
+      matchNo = d.matchNo||1; setPeriod(d.period||1);
+      jumpPtr = -1; updateMatchLabel(); render();
+      pendingEl.innerHTML = "セッションを<b>読み込みました</b>(" + events.length + " 件)。";
+    }catch(err){ alert("読み込めませんでした: " + err.message); }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+});
+window.addEventListener("beforeunload", e=>{
+  if(dirty){ e.preventDefault(); e.returnValue = ""; }
+});
+
+/* ===== 統合集計 ===== */
+let aggData = [];
+let aggFiles = 0;
+document.getElementById("btnAggFiles").addEventListener("click", ()=>document.getElementById("fileAgg").click());
+document.getElementById("fileAgg").addEventListener("change", e=>{
+  const files = Array.from(e.target.files||[]);
+  if(!files.length) return;
+  let remain = files.length;
+  files.forEach(f=>{
+    const r = new FileReader();
+    r.onload = ()=>{
+      try{ addAgg(JSON.parse(r.result), f.name); }
+      catch(err){ alert(f.name + " を読み込めませんでした"); }
+      if(--remain===0) renderAgg();
+    };
+    r.readAsText(f);
+  });
+  e.target.value = "";
+});
+document.getElementById("btnAggCurrent").addEventListener("click", ()=>{
+  addAgg(sessionData(), "(現在のセッション)");
+  renderAgg();
+});
+document.getElementById("btnAggClear").addEventListener("click", ()=>{
+  aggData = []; aggFiles = 0; renderAgg();
+});
+function addAgg(d, src){
+  const m = d.meta||{};
+  const evs = Array.isArray(d.events)? d.events : [];
+  evs.forEach(ev=>{
+    aggData.push({
+      _src: src, _year: m.year||"", _tour: m.tournament||"", _class: m.wclass||"",
+      m: ev.m||1, p: ev.p||1, t: ev.t||0,
+      player: ev.player||"赤", name: ev.name||"", stance: ev.stance||"",
+      phase: ev.phase||"", kind: ev.kind||"技", tech: ev.tech||"",
+      target: ev.target||"", result: ev.result||"", points: ev.points||0
+    });
+  });
+  aggFiles++;
+}
+function fillSelect(id, values, label){
+  const s = document.getElementById(id);
+  const cur = s.value;
+  s.innerHTML = '<option value="all">'+label+': 全て</option>';
+  Array.from(new Set(values)).filter(Boolean).sort().forEach(v=>{
+    const o = document.createElement("option"); o.value = v; o.textContent = v; s.appendChild(o);
+  });
+  if(Array.from(s.options).some(o=>o.value===cur)) s.value = cur;
+}
+["aYear","aTour","aClassSel","aName","aStance"].forEach(id=>{
+  document.getElementById(id).addEventListener("change", renderAgg);
+});
+function renderAgg(){
+  document.getElementById("aggBadge").textContent = aggFiles + " ファイル / " + aggData.length + " イベント";
+  fillSelect("aYear", aggData.map(e=>e._year), "年");
+  fillSelect("aTour", aggData.map(e=>e._tour), "大会");
+  fillSelect("aClassSel", aggData.map(e=>e._class), "階級");
+  fillSelect("aName", aggData.map(e=>e.name), "選手名");
+  const y = document.getElementById("aYear").value;
+  const tr = document.getElementById("aTour").value;
+  const cl = document.getElementById("aClassSel").value;
+  const nm = document.getElementById("aName").value;
+  const stc = document.getElementById("aStance").value;
+  const filtered = aggData.filter(e=>
+    (y==="all" || e._year===y) &&
+    (tr==="all" || e._tour===tr) &&
+    (cl==="all" || e._class===cl) &&
+    (nm==="all" || e.name===nm) &&
+    (stc==="all" || e.stance===stc)
+  );
+  document.getElementById("aggCount").textContent = "対象: " + filtered.length + " イベント";
+  renderAnalysis(filtered, "aggStatBody", "aggSeqBox", "aggMatrixBox");
+}
+
+/* ===== 設定モーダル ===== */
+const settingsOverlay = document.getElementById("settingsOverlay");
+document.getElementById("btnSettings").addEventListener("click", ()=>{
+  document.getElementById("standEdit").value = standTechs.join("\n");
+  document.getElementById("groundEdit").value = groundTechs.join("\n");
+  document.getElementById("setupEdit").value = setups.join("\n");
+  document.getElementById("targetEdit").value = targets.join("\n");
+  settingsOverlay.classList.add("open");
+});
+document.getElementById("btnSettingsClose").addEventListener("click", ()=>settingsOverlay.classList.remove("open"));
+settingsOverlay.addEventListener("click", e=>{ if(e.target===settingsOverlay) settingsOverlay.classList.remove("open"); });
+document.getElementById("btnApplyLists").addEventListener("click", ()=>{
+  const parse = id => document.getElementById(id).value.split("\n").map(s=>s.trim()).filter(Boolean);
+  const st = parse("standEdit"), gr = parse("groundEdit"), su = parse("setupEdit"), tg = parse("targetEdit");
+  if(st.length) standTechs = st;
+  if(gr.length) groundTechs = gr;
+  if(su.length) setups = su;
+  if(tg.length) targets = tg;
+  markDirty(); render();
+  settingsOverlay.classList.remove("open");
+});
+document.getElementById("btnDefaultLists").addEventListener("click", ()=>{
+  standTechs = DEF_STAND.slice(); groundTechs = DEF_GROUND.slice();
+  setups = DEF_SETUP.slice(); targets = DEF_TARGET.slice();
+  document.getElementById("standEdit").value = standTechs.join("\n");
+  document.getElementById("groundEdit").value = groundTechs.join("\n");
+  document.getElementById("setupEdit").value = setups.join("\n");
+  document.getElementById("targetEdit").value = targets.join("\n");
+  markDirty(); render();
+});
+
+/* ===== 初期化 ===== */
+updateStanceTags();
+updateMetaSummary();
+updateMatchLabel();
+render();
+setMode("local");
+</script>
+</body>
+</html>
