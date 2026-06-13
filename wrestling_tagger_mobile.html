@@ -4,14 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>レスリング タガー モバイル</title>
+<meta name="color-scheme" content="dark light">
 <style>
-  :root{
-    --bg:#161A21; --surface:#1F242E; --surface2:#262C38; --line:#323A48;
-    --text:#E9ECF2; --muted:#9AA3B2;
-    --accent:#F0972F; --red:#D94A4A; --blue:#3E7BD6; --green:#4CAF7A;
+  :root{ color-scheme:dark;
+    --bg:#0E1116; --surface:#1A1F28; --surface2:#272E3A; --line:#3A4250;
+    --text:#F2F5F9; --muted:#AEB7C5;
+    --accent:#F0972F; --accentText:#F0972F; --red:#D94A4A; --blue:#3E7BD6; --green:#4CAF7A;
   }
+  html[data-theme="light"]{ color-scheme:light;
+    --bg:#F4F5F7; --surface:#FFFFFF; --surface2:#ECEEF2; --line:#C5CBD4;
+    --text:#21252C; --muted:#5C6470;
+    --accent:#FF9D23; --accentText:#B45D00;
+    --red:#E04848; --blue:#3A78DB; --green:#27A35F;
+  }
+  html[data-theme="light"][data-accent="lime"]{ --accent:#7ED957; --accentText:#3E8914; }
+  html[data-theme="light"][data-accent="yellow"]{ --accent:#FFD23F; --accentText:#8F6B00; }
+  html[data-theme="light"][data-accent="mint"]{ --accent:#3EC9A7; --accentText:#0E7A66; }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html{scroll-padding-top:300px;}
+  html{background:var(--bg);}
   body{
     background:var(--bg); color:var(--text);
     font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;
@@ -37,7 +48,7 @@
     display:flex; align-items:center; gap:8px;
   }
   summary::-webkit-details-marker{display:none;}
-  summary::before{content:"▸"; color:var(--accent); transition:transform .15s;}
+  summary::before{content:"▸"; color:var(--accentText); transition:transform .15s;}
   details[open] summary::before{transform:rotate(90deg);}
   summary .sumInfo{margin-left:auto; font-weight:400; font-size:12px; color:var(--text);}
   .dbody{padding:4px 14px 16px;}
@@ -53,7 +64,7 @@
   /* 固定エリア:動画+操作バー */
   .stickyTop{
     position:sticky; top:0; z-index:30; background:var(--bg);
-    border-bottom:1px solid var(--line); padding-bottom:6px;
+    border-bottom:1px solid var(--line); padding-bottom:4px;
   }
   .videoBox{
     position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden;
@@ -63,12 +74,24 @@
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     color:var(--muted); font-size:13px; text-align:center; padding:16px;
   }
+  .liveBox{padding:10px 12px 4px;}
+  .liveScore{display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center;}
+  .lsCard{border-radius:12px; padding:8px 6px; text-align:center;}
+  .lsRed{background:rgba(217,74,74,.16);}
+  .lsBlue{background:rgba(62,123,214,.16);}
+  .lsName{font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .lsRed .lsName{color:var(--red);}
+  .lsBlue .lsName{color:var(--blue);}
+  .lsPts{font-size:30px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .lsMid{display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .lsMid div{font-size:13px; font-weight:700; color:var(--accentText);}
+  .lsMid button{padding:6px 10px; font-size:12px; min-height:36px; white-space:nowrap;}
   .ctrlBar{
     display:flex; align-items:center; gap:6px; padding:6px 8px 0; flex-wrap:nowrap; overflow-x:auto;
   }
   .ctrlBar .time{
     font-variant-numeric:tabular-nums; font-size:20px; font-weight:700;
-    color:var(--accent); font-family:ui-monospace,Consolas,monospace; min-width:84px;
+    color:var(--accentText); font-family:ui-monospace,Consolas,monospace; min-width:84px;
   }
   .ctrlBar button{padding:8px 10px; min-height:40px; font-size:13px; flex-shrink:0;}
   .ctrlBar .play{min-width:52px; font-size:16px;}
@@ -88,7 +111,7 @@
   .secLabel{font-size:11px; color:var(--muted); letter-spacing:.08em; margin:12px 0 6px; font-weight:600;}
 
   .matchBar{display:flex; gap:8px; align-items:center;}
-  .matchBar .mlabel{font-size:14px; font-weight:700; color:var(--accent); flex:1;}
+  .matchBar .mlabel{font-size:14px; font-weight:700; color:var(--accentText); flex:1;}
   .matchBar button{padding:9px 12px; font-size:13px; min-height:40px;}
   .matchBar button.sel{background:var(--accent); border-color:var(--accent); color:#1A1206; font-weight:700;}
 
@@ -115,8 +138,27 @@
   .techGrid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px;}
   .techGrid button{padding:13px 6px; font-size:15px; border-radius:12px; min-height:56px;}
 
-  .targetRow{display:flex; gap:7px; flex-wrap:wrap;}
+  .targetRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
   .targetRow button{padding:9px 14px; font-size:14px; border-radius:999px; min-height:44px;}
+  .targetRow button.sel{background:var(--accent); border-color:var(--accent); color:#1A1206; font-weight:700;}
+  .tz{fill:var(--surface2); stroke:var(--line); stroke-width:1.5; cursor:pointer;}
+  .tz.sel{fill:var(--accent); stroke:var(--accent);}
+  .tzl{fill:var(--muted); font-size:13px; font-weight:700;}
+  .tCap{font-size:12px; color:var(--muted); flex:1; min-width:130px; line-height:1.6;}
+  .accentDots{display:inline-flex; gap:6px; align-items:center; flex-shrink:0;}
+  html:not([data-theme="light"]) .accentDots{display:none;}
+  .dot{width:26px; height:26px; min-height:26px; border-radius:50%; padding:0; border:2px solid var(--line);}
+  .dot.sel{border-color:var(--text);}
+  .ticker{
+    display:flex; gap:5px; align-items:center; overflow-x:auto; white-space:nowrap;
+    padding:6px 8px; min-height:38px; font-size:12px;
+  }
+  .chip{border-radius:999px; padding:3px 10px; background:var(--surface2); flex-shrink:0;}
+  .chip.tRed{border:1px solid var(--red); color:var(--red);}
+  .chip.tBlue{border:1px solid var(--blue); color:var(--blue);}
+  .chip.tSet{border-style:dashed;}
+  .chip.tM{border:1px solid var(--line); color:var(--muted);}
+  .tickArrow{color:var(--muted); flex-shrink:0;}
 
   .resultRow{display:grid; grid-template-columns:repeat(3,1fr); gap:7px;}
   .resultRow button{padding:12px 4px; font-size:14px; min-height:50px;}
@@ -138,7 +180,7 @@
   th{color:var(--muted); font-weight:600; font-size:11px; position:sticky; top:0; background:var(--surface); z-index:1;}
   .logWrap{max-height:330px; overflow:auto; border:1px solid var(--line); border-radius:10px;}
   td .mini{padding:6px 10px; font-size:13px; border-radius:8px; min-height:36px;}
-  td.jump{color:var(--accent); text-decoration:underline; text-underline-offset:2px;}
+  td.jump{color:var(--accentText); text-decoration:underline; text-underline-offset:2px;}
   tr.cur td{background:rgba(240,151,47,.12);}
   .tagRed{color:var(--red); font-weight:700;}
   .tagBlue{color:var(--blue); font-weight:700;}
@@ -166,7 +208,7 @@
   .analysis{margin-bottom:16px;}
   .analysis h3{font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:600;}
   .analysis .row{display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;}
-  .analysis .row .n{color:var(--accent); font-variant-numeric:tabular-nums;}
+  .analysis .row .n{color:var(--accentText); font-variant-numeric:tabular-nums;}
   .arrow{color:var(--muted);}
   .matrixWrap{overflow:auto; max-height:300px; border:1px solid var(--line); border-radius:10px;}
   .matrixWrap table{font-size:11px;}
@@ -190,7 +232,7 @@
     background:var(--surface); border:1px solid var(--line); border-radius:14px;
     padding:16px; max-width:560px; width:100%;
   }
-  .card h2{font-size:14px; color:var(--accent); margin-bottom:10px;}
+  .card h2{font-size:14px; color:var(--accentText); margin-bottom:10px;}
   .card h3{font-size:12px; color:var(--muted); margin:12px 0 4px; font-weight:600;}
   .card textarea{
     width:100%; height:84px; background:var(--bg); color:var(--text);
@@ -235,9 +277,10 @@
   <summary>動画ソース<span class="sumInfo" id="srcSummary">未選択</span></summary>
   <div class="dbody">
     <div class="srcTabs">
-      <button id="tabLocal" class="sel">端末の動画</button>
+      <button id="tabLocal" class="sel">動画</button>
       <button id="tabYT">YouTube</button>
       <button id="tabTimer">タイマー</button>
+      <button id="tabLive">ライブ</button>
     </div>
     <div class="srcPane open" id="paneLocal">
       <div class="rowline">
@@ -257,6 +300,16 @@
     <div class="srcPane" id="paneTimer">
       <div class="srcNote">別アプリで動画を再生し、再生開始と同時に「▶」を押してください。±ボタンでズレを補正できます。</div>
     </div>
+    <div class="srcPane" id="paneLive">
+      <div class="rowline">
+        <span style="font-size:13px; color:var(--muted);">1ピリオド</span>
+        <select id="periodLenSel"><option value="180" selected>3分</option><option value="120">2分</option></select>
+        <label style="font-size:12px; color:var(--muted); display:flex; gap:6px; align-items:center;">
+          <input type="checkbox" id="chkDetail">崩し・部位も入力する
+        </label>
+      </div>
+      <div class="srcNote">目の前の試合をそのまま記録するモードです。開始の笛と同時に▶。ピリオド終了で自動的に止まります。中断時は⏸で時計を止めてください。</div>
+    </div>
   </div>
 </details>
 
@@ -266,6 +319,22 @@
     <div class="videoEmpty" id="videoEmpty">「動画ソース」から動画を選択してください</div>
     <video id="localVideo" controls playsinline style="display:none"></video>
     <div id="ytFrame" style="display:none"></div>
+  </div>
+  <div class="liveBox" id="liveBox" style="display:none;">
+    <div class="liveScore">
+      <div class="lsCard lsRed">
+        <div class="lsName" id="lsRedName">赤</div>
+        <div class="lsPts" id="lsRedPts">0</div>
+      </div>
+      <div class="lsMid">
+        <div id="livePeriodLabel">P1</div>
+        <button id="btnNextPeriod">P2へ</button>
+      </div>
+      <div class="lsCard lsBlue">
+        <div class="lsName" id="lsBlueName">青</div>
+        <div class="lsPts" id="lsBluePts">0</div>
+      </div>
+    </div>
   </div>
   <div class="ctrlBar">
     <span class="time" id="clockTime">00:00.0</span>
@@ -281,16 +350,25 @@
       <option value="1.5">1.5x</option>
     </select>
     <button id="btnQuickSave" title="JSON保存">💾</button>
+    <button id="btnTheme">☀ ライト</button>
+    <span class="accentDots">
+      <button class="dot sel" data-a="orange" style="background:#FF9D23" aria-label="オレンジ"></button>
+      <button class="dot" data-a="lime" style="background:#7ED957" aria-label="ライムグリーン"></button>
+      <button class="dot" data-a="yellow" style="background:#FFD23F" aria-label="イエロー"></button>
+      <button class="dot" data-a="mint" style="background:#3EC9A7" aria-label="ミント"></button>
+    </span>
   </div>
+  <div class="ticker" id="ticker"><span style="color:var(--muted)">ここに入力が流れます</span></div>
 </div>
 
 <!-- ③ 入力パッド -->
 <div class="pad">
-  <div class="matchBar">
+    <div class="matchBar">
     <span class="mlabel" id="matchLabel">試合 1・P1</span>
+    <button id="btnPrevMatch">←前</button>
     <button id="p1" class="sel">P1</button>
     <button id="p2">P2</button>
-    <button id="btnNextMatch">次の試合 →</button>
+    <button id="btnNextMatch">次→</button>
   </div>
 
   <div class="playerRow">
@@ -303,20 +381,21 @@
     <button id="phGround">グラウンド</button>
   </div>
 
-  <div class="secLabel">セットアップ(崩し・いなし)</div>
+  <div class="secLabel" id="setupLabel">セットアップ(崩し・いなし)</div>
   <div class="setupGrid" id="setupGrid"></div>
 
   <div class="secLabel" id="techLabel">技 — スタンド</div>
   <div class="techGrid" id="techGrid"></div>
 
-  <div class="secLabel">攻撃部位(直前の記録に付与・任意)</div>
+  <div class="secLabel" id="targetLabel">攻撃部位(タップで選択。以後の記録に自動付与・再タップで解除)</div>
   <div class="targetRow" id="targetRow"></div>
 
   <div class="secLabel">結果(直前の記録に付与)</div>
   <div class="resultRow">
     <button class="pt" data-res="成功" data-pt="1">成功 1点</button>
     <button class="pt" data-res="成功" data-pt="2">成功 2点</button>
-    <button class="pt" data-res="成功" data-pt="4">成功 4点+</button>
+    <button class="pt" data-res="成功" data-pt="4">成功 4点</button>
+    <button class="pt" data-res="成功" data-pt="5">成功 5点</button>
     <button class="ng" data-res="失敗" data-pt="0">失敗</button>
     <button class="ng" data-res="不成立" data-pt="0">不成立</button>
   </div>
@@ -336,6 +415,7 @@
   <summary>記録ログ<span class="sumInfo" id="evCount">0 件</span></summary>
   <div class="dbody">
     <div class="filterBar">
+      <select id="fMatch"><option value="all">試合: 全て</option></select>
       <select id="fPlayer"><option value="all">選手: 全て</option><option value="赤">赤</option><option value="青">青</option></select>
       <select id="fTech"><option value="all">アクション: 全て</option></select>
       <select id="fResult"><option value="all">結果: 全て</option><option value="成功">成功</option><option value="失敗">失敗</option><option value="不成立">不成立</option></select>
@@ -355,7 +435,7 @@
     </div>
 
     <div class="editor" id="editorBox">
-      <h2 style="font-size:13px; color:var(--accent); margin-bottom:8px;">記録の修正 <span id="editIdxLabel"></span></h2>
+      <h2 style="font-size:13px; color:var(--accentText); margin-bottom:8px;">記録の修正 <span id="editIdxLabel"></span></h2>
       <div class="erow">
         <div><label>試合</label><input type="number" id="eMatch" min="1"></div>
         <div><label>ピリオド</label><input type="number" id="ePeriod" min="1" max="2"></div>
@@ -449,9 +529,18 @@
     <div class="btnGrid">
       <button id="btnJSON">保存(JSON)</button>
       <button id="btnLoadSession">読み込み</button>
-      <button id="btnCSV">CSV書き出し</button>
+      <button id="btnCSV">CSV(Excel用)</button>
+      <button id="btnTSV">TSV(スプレッドシート用)</button>
+      <button id="btnResearch">研究用CSV+コードブック</button>
+      <button id="btnXLSX">Excel(.xlsx)※要ネット</button>
+      <button id="btnMD">Markdownレポート</button>
+      <button id="btnHTMLRep">HTMLレポート(印刷→PDF)</button>
+      <button id="btnTXTSum">テキストサマリー</button>
       <button id="btnLinks">場面リンク</button>
-      <button id="btnSettings" style="grid-column:1/-1;">⚙ 技・アクションの編集</button>
+      <button id="btnPNG">結果カード画像(PNG)</button>
+      <button id="btnMDCopy">集計表をMDコピー</button>
+      <button id="btnVocabLight">軽量語彙(ライブ用)</button>
+      <button id="btnSettings">⚙ 技・アクションの編集</button>
       <input type="file" id="fileSession" accept=".json" style="display:none">
     </div>
     <div class="srcNote" style="margin-top:10px;">保存したJSONはPC版(PRO2)とそのまま相互利用できます。スマホでは自動上書き保存が使えないため、区切りごとに「保存(JSON)」または上部の💾を押してください。保存ファイルは端末のダウンロード/ファイルアプリに入ります。</div>
@@ -501,6 +590,7 @@ let editIdx = -1;
 let jumpPtr = -1;
 let wasPlaying = false;
 let dirty = false;
+let stickyTarget = "";
 
 function curTechList(){ return phase==="スタンド" ? standTechs : groundTechs; }
 
@@ -553,7 +643,20 @@ function seekTo(t){
   if(wasRun) startEpoch = Date.now();
 }
 setInterval(()=>{
-  clockEl.textContent = fmt(getTime());
+  if(mode==="live"){
+    const end = period * PLEN();
+    if(running && timerNow() >= end){
+      baseSec = end; running = false;
+      pendingEl.innerHTML = period===1
+        ? "<b>P1終了。</b>休憩後「P2へ」を押し、開始の笛と同時に▶。"
+        : "<b>試合終了。</b>「試合終了→次へ」で次の試合に進めます。";
+    }
+    clockEl.textContent = fmt(Math.max(0, end - timerNow()));
+    document.getElementById("livePeriodLabel").textContent = "P" + period;
+    document.getElementById("btnNextPeriod").textContent = period===1 ? "P2へ" : "試合終了→次へ";
+  }else{
+    clockEl.textContent = fmt(getTime());
+  }
   btnTimer.textContent = isPlaying() ? "⏸" : "▶";
 }, 100);
 
@@ -568,8 +671,8 @@ document.getElementById("speedSel").addEventListener("change", e=>{
 });
 
 /* ===== ソース切替 ===== */
-const tabs = {local:document.getElementById("tabLocal"), yt:document.getElementById("tabYT"), timer:document.getElementById("tabTimer")};
-const panes = {local:document.getElementById("paneLocal"), yt:document.getElementById("paneYT"), timer:document.getElementById("paneTimer")};
+const tabs = {local:document.getElementById("tabLocal"), yt:document.getElementById("tabYT"), timer:document.getElementById("tabTimer"), live:document.getElementById("tabLive")};
+const panes = {local:document.getElementById("paneLocal"), yt:document.getElementById("paneYT"), timer:document.getElementById("paneTimer"), live:document.getElementById("paneLive")};
 const videoEmpty = document.getElementById("videoEmpty");
 const ytFrame = document.getElementById("ytFrame");
 const videoBox = document.getElementById("videoBox");
@@ -586,15 +689,47 @@ function setMode(m){
   ytFrame.style.display = (m==="yt") ? "block" : "none";
   const hasVideo = (m==="local" && localVideo.src) || (m==="yt" && ytPlayer);
   videoEmpty.style.display = hasVideo ? "none" : "flex";
-  videoBox.style.display = (m==="timer") ? "none" : "block";
+  videoBox.style.display = (m==="timer" || m==="live") ? "none" : "block";
+  document.getElementById("liveBox").style.display = (m==="live") ? "block" : "none";
+  document.getElementById("speedSel").style.display = (m==="live") ? "none" : "";
   videoEmpty.textContent = m==="yt"
     ? "「動画ソース」のYouTube欄にURLを貼り付けてください"
     : "「動画ソース」から動画を選択してください";
-  srcSummary.textContent = m==="timer" ? "タイマー" : (hasVideo ? (m==="local"?"端末の動画":"YouTube") : "未選択");
+  srcSummary.textContent = m==="live" ? "ライブ採点"
+    : m==="timer" ? "タイマー"
+    : (hasVideo ? (m==="local"?"動画":"YouTube") : "未選択");
+  updateDetailVis();
+  updateLiveScore();
 }
 tabs.local.addEventListener("click", ()=>setMode("local"));
 tabs.yt.addEventListener("click", ()=>setMode("yt"));
 tabs.timer.addEventListener("click", ()=>setMode("timer"));
+tabs.live.addEventListener("click", ()=>setMode("live"));
+
+/* ===== ライブ採点モード ===== */
+function PLEN(){ return Number(document.getElementById("periodLenSel").value) || 180; }
+function updateLiveScore(){
+  const sum = c => events.filter(e=>e.m===matchNo && e.player===c).reduce((a,e)=>a+(e.points||0),0);
+  document.getElementById("lsRedPts").textContent = sum("赤");
+  document.getElementById("lsBluePts").textContent = sum("青");
+  document.getElementById("lsRedName").textContent = document.getElementById("mRedName").value || "赤";
+  document.getElementById("lsBlueName").textContent = document.getElementById("mBlueName").value || "青";
+}
+function updateDetailVis(){
+  const hide = (mode==="live" && !document.getElementById("chkDetail").checked);
+  ["setupLabel","setupGrid","targetLabel","targetRow"].forEach(id=>{
+    document.getElementById(id).style.display = hide ? "none" : "";
+  });
+}
+document.getElementById("chkDetail").addEventListener("change", updateDetailVis);
+document.getElementById("btnNextPeriod").addEventListener("click", ()=>{
+  if(period===1){
+    setPeriod(2);
+    pendingEl.innerHTML = "<b>P2</b> 準備完了。開始の笛と同時に▶を押してください。";
+  }else{
+    document.getElementById("btnNextMatch").click();
+  }
+});
 
 document.getElementById("btnPickVideo").addEventListener("click", ()=>document.getElementById("fileVideo").click());
 document.getElementById("fileVideo").addEventListener("change", e=>{
@@ -676,6 +811,7 @@ function updateMetaSummary(){
   const r = document.getElementById("mRedName").value || "赤";
   const b = document.getElementById("mBlueName").value || "青";
   document.getElementById("metaSummary").textContent = r + " vs " + b;
+  updateLiveScore();
 }
 
 const phStand = document.getElementById("phStand");
@@ -692,6 +828,7 @@ phGround.addEventListener("click", ()=>setPhase("グラウンド"));
 function setPeriod(n){
   period = Math.min(2, Math.max(1, n));
   [1,2].forEach(i=>document.getElementById("p"+i).classList.toggle("sel", i===period));
+  if(mode==="live") seekTo((period-1)*PLEN());
   updateMatchLabel();
 }
 [1,2].forEach(i=>document.getElementById("p"+i).addEventListener("click", ()=>setPeriod(i)));
@@ -700,9 +837,18 @@ function updateMatchLabel(){
 }
 document.getElementById("btnNextMatch").addEventListener("click", ()=>{
   matchNo++; setPeriod(1);
+  pushTick("試合" + matchNo, "tM");
   document.getElementById("pending").innerHTML =
     "試合 <b>" + matchNo + "</b> に切り替えました。必要なら「試合情報」で選手名・構えを更新してください。";
-  updateMatchLabel();
+  updateMatchLabel(); render();
+});
+document.getElementById("btnPrevMatch").addEventListener("click", ()=>{
+  if(matchNo<=1) return;
+  matchNo--; setPeriod(1);
+  pushTick("試合" + matchNo, "tM");
+  document.getElementById("pending").innerHTML =
+    "試合 <b>" + matchNo + "</b> に戻りました。この試合の記録に追記されます。";
+  updateMatchLabel(); render();
 });
 
 /* ===== 入力パッド描画 ===== */
@@ -723,7 +869,32 @@ function renderPads(){
   document.getElementById("techLabel").textContent = "技 — " + phase;
   const tr = document.getElementById("targetRow");
   tr.innerHTML = "";
-  targets.forEach(t=>tr.appendChild(makeBtn(t, ()=>setTarget(t))));
+  const std = targets.length===6 && DEF_TARGET.every((t,i)=>targets[i]===t);
+  if(std){
+    tr.innerHTML =
+      "<svg viewBox='0 0 220 172' style='width:190px; height:auto; flex-shrink:0;' role='img' aria-label='人型の部位選択(選手本人から見た左右)'>" +
+      "<text x='44' y='16' class='tzl'>右</text><text x='168' y='16' class='tzl'>左</text>" +
+      "<circle cx='110' cy='28' r='16' class='tz' data-t='首'></circle>" +
+      "<rect x='88' y='48' width='44' height='58' rx='10' class='tz' data-t='体幹'></rect>" +
+      "<rect x='58' y='50' width='24' height='52' rx='11' class='tz' data-t='右手'></rect>" +
+      "<rect x='138' y='50' width='24' height='52' rx='11' class='tz' data-t='左手'></rect>" +
+      "<rect x='88' y='110' width='20' height='56' rx='9' class='tz' data-t='右足'></rect>" +
+      "<rect x='112' y='110' width='20' height='56' rx='9' class='tz' data-t='左足'></rect>" +
+      "</svg><div class='tCap' id='targetCap'></div>";
+    tr.querySelectorAll(".tz").forEach(z=>{
+      if(z.dataset.t===stickyTarget) z.classList.add("sel");
+      z.addEventListener("click", ()=>setTarget(z.dataset.t));
+    });
+    document.getElementById("targetCap").textContent = stickyTarget
+      ? "選択中: " + stickyTarget + "(再タップで解除)"
+      : "人型をタップ。左右は選手本人から見た向きです。";
+  }else{
+    targets.forEach(t=>{
+      const b = makeBtn(t, ()=>setTarget(t));
+      if(t===stickyTarget) b.classList.add("sel");
+      tr.appendChild(b);
+    });
+  }
   const fTech = document.getElementById("fTech");
   const cur = fTech.value;
   fTech.innerHTML = '<option value="all">アクション: 全て</option>';
@@ -732,33 +903,83 @@ function renderPads(){
     const o = document.createElement("option"); o.value = t; o.textContent = t; fTech.appendChild(o);
   });
   if(Array.from(fTech.options).some(o=>o.value===cur)) fTech.value = cur;
+  const fM = document.getElementById("fMatch");
+  const curM = fM.value;
+  fM.innerHTML = '<option value="all">試合: 全て</option>';
+  Array.from(new Set(events.map(e=>e.m).concat([matchNo]))).sort((a,b)=>a-b).forEach(mn=>{
+    const o = document.createElement("option");
+    o.value = mn; o.textContent = "試合 " + mn + (mn===matchNo ? "(今)" : "");
+    fM.appendChild(o);
+  });
+  if(Array.from(fM.options).some(o=>String(o.value)===curM)) fM.value = curM;
 }
 
 /* ===== 記録 ===== */
 const pendingEl = document.getElementById("pending");
 const chkAutoPause = document.getElementById("chkAutoPause");
 
+const ticker = document.getElementById("ticker");
+let lastChipEl = null;
+function pushTick(label, cls){
+  if(ticker.firstChild && ticker.firstChild.tagName==="SPAN" && !ticker.firstChild.className) ticker.innerHTML = "";
+  if(ticker.children.length){
+    const a = document.createElement("span");
+    a.className = "tickArrow"; a.textContent = "→";
+    ticker.appendChild(a);
+  }
+  const c = document.createElement("span");
+  c.className = "chip " + cls; c.textContent = label;
+  c.dataset.base = label;
+  ticker.appendChild(c);
+  lastChipEl = c;
+  while(ticker.children.length > 23) ticker.removeChild(ticker.firstChild);
+  ticker.scrollLeft = ticker.scrollWidth;
+}
+function removeLastTick(){
+  if(!ticker.querySelector(".chip")) return;
+  if(ticker.lastChild) ticker.removeChild(ticker.lastChild);
+  if(ticker.lastChild && ticker.lastChild.className==="tickArrow") ticker.removeChild(ticker.lastChild);
+  const chips = ticker.querySelectorAll(".chip");
+  lastChipEl = chips.length ? chips[chips.length-1] : null;
+}
+
+
 function logAction(name, kind){
   if(chkAutoPause.checked && isPlaying()){ wasPlaying = true; pauseAll(); }
+  const tNow = +getTime().toFixed(1);
+  const prevA = [];
+  for(let i=events.length-1; i>=0 && prevA.length<2; i--){
+    const e0 = events[i];
+    if(e0.player!==player || e0.m!==matchNo) continue;
+    if(tNow - e0.t >= 0 && tNow - e0.t <= 20) prevA.unshift(e0.tech);
+    else break;
+  }
   events.push({
-    m:matchNo, p:period, t:+getTime().toFixed(1),
+    m:matchNo, p:period, t:tNow,
     player, name:curName(), stance:curStance(),
-    phase, kind, tech:name, target:"", result:"", points:0
+    phase, kind, tech:name, target:stickyTarget, result:"", points:0, prev:prevA
   });
-  pendingEl.innerHTML = "記録: <b>" + fmt(events[events.length-1].t) + " " + player + " " + name + "</b> → 部位(任意)→ 結果";
+  pushTick(player + " " + name, (player==="赤" ? "tRed" : "tBlue") + (kind==="セットアップ" ? " tSet" : ""));
+  pendingEl.innerHTML = "記録: <b>" + fmt(events[events.length-1].t) + " " + player + " " + name + (stickyTarget? "("+stickyTarget+")":"") + "</b> → 結果ボタンへ";
   markDirty(); render();
 }
 function setTarget(part){
-  if(!events.length) return;
-  const ev = events[events.length-1];
-  ev.target = part;
-  pendingEl.innerHTML = "部位を付与: <b>" + ev.tech + " → " + part + "</b> → 結果へ";
+  stickyTarget = (stickyTarget===part) ? "" : part;
+  if(events.length && events[events.length-1].result===""){
+    events[events.length-1].target = stickyTarget;
+  }
+  pendingEl.innerHTML = stickyTarget
+    ? "部位 <b>" + stickyTarget + "</b> を選択中(以後の記録に自動付与。再タップで解除)"
+    : "部位の選択を解除しました。";
   markDirty(); render();
 }
 function applyResult(res, pt){
   if(!events.length) return;
   const ev = events[events.length-1];
   ev.result = res; ev.points = pt;
+  if(lastChipEl){
+    lastChipEl.textContent = lastChipEl.dataset.base + (res==="成功" ? " ◯" + (pt||"") : res==="失敗" ? " ×" : " ー");
+  }
   pendingEl.innerHTML = "結果を付与: <b>" + ev.tech + (ev.target? "("+ev.target+")":"") + " → " + ev.result + (ev.points? " "+ev.points+"点":"") + "</b>";
   if(chkAutoPause.checked && wasPlaying){ playAll(); }
   wasPlaying = false;
@@ -767,20 +988,59 @@ function applyResult(res, pt){
 document.querySelectorAll(".resultRow button").forEach(b=>{
   b.addEventListener("click", ()=>applyResult(b.dataset.res, Number(b.dataset.pt)));
 });
+
+/* ===== ライブ用軽量語彙 ===== */
+const LIGHT_TAG = {
+  stand:["片足タックル","両足タックル","がぶり","場外押し出し"],
+  ground:["ローリング","アンクルホールド"],
+  setups:["崩し","スナップダウン"]
+};
+let vocabBackup = null;
+function isLightVocab(){
+  return standTechs.join("|")===LIGHT_TAG.stand.join("|")
+    && groundTechs.join("|")===LIGHT_TAG.ground.join("|")
+    && setups.join("|")===LIGHT_TAG.setups.join("|");
+}
+function updateLightBtn(){
+  const b = document.getElementById("btnVocabLight");
+  if(b) b.textContent = isLightVocab() ? "標準語彙に戻す" : "軽量語彙(ライブ用)";
+}
+setInterval(updateLightBtn, 1000);
+document.getElementById("btnVocabLight").addEventListener("click", ()=>{
+  if(isLightVocab()){
+    if(vocabBackup){
+      standTechs = vocabBackup.standTechs; groundTechs = vocabBackup.groundTechs; setups = vocabBackup.setups;
+      pendingEl.innerHTML = "語彙を<b>切替前の内容</b>に戻しました。";
+    }else{
+      standTechs = DEF_STAND.slice(); groundTechs = DEF_GROUND.slice(); setups = DEF_SETUP.slice();
+      pendingEl.innerHTML = "語彙を<b>標準(初期設定)</b>に戻しました。";
+    }
+    vocabBackup = null;
+  }else{
+    vocabBackup = {standTechs:standTechs.slice(), groundTechs:groundTechs.slice(), setups:setups.slice()};
+    standTechs = LIGHT_TAG.stand.slice(); groundTechs = LIGHT_TAG.ground.slice(); setups = LIGHT_TAG.setups.slice();
+    pendingEl.innerHTML = "<b>ライブ用軽量語彙</b>に切り替えました(部位リストはそのまま)。";
+  }
+  markDirty(); render(); updateLightBtn();
+});
+
 document.getElementById("btnUndo").addEventListener("click", ()=>{
   if(!events.length) return;
   const ev = events.pop();
+  removeLastTick();
   pendingEl.innerHTML = "取り消し: <b>" + ev.tech + "</b>";
   markDirty(); render();
 });
 
 /* ===== フィルタと表示 ===== */
+const fMatch = document.getElementById("fMatch");
 const fPlayer = document.getElementById("fPlayer");
 const fTech = document.getElementById("fTech");
 const fResult = document.getElementById("fResult");
-[fPlayer, fTech, fResult].forEach(s=>s.addEventListener("change", ()=>{ jumpPtr = -1; render(); }));
+[fMatch, fPlayer, fTech, fResult].forEach(s=>s.addEventListener("change", ()=>{ jumpPtr = -1; render(); }));
 
 function passFilter(ev){
+  if(fMatch.value!=="all" && ev.m!==Number(fMatch.value)) return false;
   if(fPlayer.value!=="all" && ev.player!==fPlayer.value) return false;
   if(fTech.value!=="all" && ev.tech!==fTech.value) return false;
   if(fResult.value!=="all" && ev.result!==fResult.value) return false;
@@ -824,6 +1084,7 @@ function render(){
   });
   document.getElementById("jumpInfo").textContent = vis.length ? (jumpPtr>=0 ? (jumpPtr+1)+" / "+vis.length+" 場面" : vis.length+" 場面") : "";
   renderPads();
+  updateLiveScore();
   renderAnalysis(events, "statBody", "seqBox", "matrixBox");
 }
 
@@ -994,7 +1255,7 @@ function setMeta(m){
   updateStanceTags(); updateMetaSummary();
 }
 function sessionData(){
-  return {meta:meta(), standTechs, groundTechs, setups, targets, events, matchNo, period, version:2};
+  return {meta:meta(), standTechs, groundTechs, setups, targets, events, matchNo, period, periodLen:PLEN(), theme:document.documentElement.dataset.theme||"dark", accent:document.documentElement.dataset.accent||"orange", version:2};
 }
 function download(name, text, type){
   const a = document.createElement("a");
@@ -1040,6 +1301,7 @@ document.getElementById("btnLinks").addEventListener("click", ()=>{
     if(e.m!==lastMatch){ lines.push(""); lines.push("--- 試合 " + e.m + " ---"); lastMatch = e.m; }
     const tag = fmt(e.t) + " " + e.player + (e.name? "("+e.name+")":"") + " " + e.phase + " " +
       e.tech + (e.target? "["+e.target+"]":"") +
+      (Array.isArray(e.prev) && e.prev.length ? "(" + e.prev.join("→") + " から)" : "") +
       (e.result? " → " + e.result + (e.points? " "+e.points+"点":"") : "");
     if(id){
       const sec = Math.max(0, Math.floor(e.t - 3));
@@ -1082,6 +1344,11 @@ document.getElementById("fileSession").addEventListener("change", e=>{
         target:ev.target||"", result:ev.result||"", points:ev.points||0
       })) : [];
       matchNo = d.matchNo||1; setPeriod(d.period||1);
+      if(d.periodLen && ["120","180"].includes(String(d.periodLen))){
+        document.getElementById("periodLenSel").value = String(d.periodLen);
+      }
+      if(d.theme) setTheme(d.theme);
+      if(d.accent) setAccent(d.accent);
       jumpPtr = -1; updateMatchLabel(); render();
       pendingEl.innerHTML = "セッションを<b>読み込みました</b>(" + events.length + " 件)。";
     }catch(err){ alert("読み込めませんでした: " + err.message); }
@@ -1120,6 +1387,20 @@ document.getElementById("btnAggClear").addEventListener("click", ()=>{
   aggData = []; aggFiles = 0; renderAgg();
 });
 function addAgg(d, src){
+  if(Array.isArray(d.records)){ /* FOCUS形式(技のみ取り込み) */
+    d.records.forEach(r=>{
+      if(r.kind!=="tech") return;
+      aggData.push({
+        _src: src, _year: "", _tour: d.event||"", _class: d.wclass||"",
+        m: r.m||1, p: r.p||1, t: r.t||0,
+        player: "赤", name: d.athlete||"", stance: d.stance||"",
+        phase: "スタンド", kind: "技", tech: r.action||"",
+        target: r.opp||"", result: r.result||"", points: r.points||0
+      });
+    });
+    aggFiles++;
+    return;
+  }
   const m = d.meta||{};
   const evs = Array.isArray(d.events)? d.events : [];
   evs.forEach(ev=>{
@@ -1166,6 +1447,291 @@ function renderAgg(){
   document.getElementById("aggCount").textContent = "対象: " + filtered.length + " イベント";
   renderAnalysis(filtered, "aggStatBody", "aggSeqBox", "aggMatrixBox");
 }
+
+/* ===== 多形式書き出し・テーマ ===== */
+function onClick(id, fn){ const el = document.getElementById(id); if(el) el.addEventListener("click", fn); }
+const exportOverlay = document.getElementById("exportOverlay");
+if(exportOverlay){
+  onClick("btnExport", ()=>exportOverlay.classList.add("open"));
+  onClick("btnExportClose", ()=>exportOverlay.classList.remove("open"));
+  exportOverlay.addEventListener("click", e=>{ if(e.target===exportOverlay) exportOverlay.classList.remove("open"); });
+}
+
+function setTheme(t){
+  document.documentElement.dataset.theme = (t==="light") ? "light" : "dark";
+  const b = document.getElementById("btnTheme");
+  if(b) b.textContent = (t==="light") ? "🌙 ダーク" : "☀ ライト";
+}
+onClick("btnTheme", ()=>setTheme(document.documentElement.dataset.theme==="light" ? "dark" : "light"));
+
+function setAccent(a){
+  if(!["orange","lime","yellow","mint"].includes(a)) a = "orange";
+  document.documentElement.dataset.accent = a;
+  document.querySelectorAll(".dot").forEach(d=>d.classList.toggle("sel", d.dataset.a===a));
+}
+document.querySelectorAll(".dot").forEach(d=>d.addEventListener("click", ()=>setAccent(d.dataset.a)));
+setAccent(document.documentElement.dataset.accent || "orange");
+
+function statsOf(evs){
+  const st = {};
+  evs.forEach(e=>{
+    const s = st[e.tech] = st[e.tech] || {n:0, ok:0, pts:0};
+    s.n++; if(e.result==="成功"){ s.ok++; s.pts += (e.points||0); }
+  });
+  return Object.entries(st).map(([tech,s])=>({
+    tech, n:s.n, ok:s.ok,
+    rate: s.n ? Math.round(100*s.ok/s.n) : 0,
+    avg: s.ok ? (s.pts/s.ok).toFixed(1) : ""
+  })).sort((a,b)=>b.n-a.n);
+}
+function pairsTop(evs, limit){
+  const pc = {};
+  chains(evs).forEach(p=>{ const k = p[0]+"→"+p[1]; pc[k] = (pc[k]||0)+1; });
+  return Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0, limit||10);
+}
+function matchNums(){ return Array.from(new Set(events.map(e=>e.m))).sort((a,b)=>a-b); }
+function scoreOf(mn){
+  const s = {"赤":0, "青":0};
+  events.forEach(e=>{ if(e.m===mn) s[e.player] += (e.points||0); });
+  return s;
+}
+function repHead(){
+  const m = meta();
+  return {m, title: [(m.tournament||"大会名未設定"), m.year, m.wclass].filter(Boolean).join(" ")};
+}
+function noData(){ if(!events.length){ alert("記録がありません。"); return true; } return false; }
+
+const JP_HEAD = ["大会","年","階級","動画","試合No","ピリオド","タイム秒","タイム","選手色","選手名","構え","局面","種別","アクション","部位","結果","得点","直前アクション(同選手・同試合20秒以内)"];
+function prevOf(e, i){
+  for(let j=i-1; j>=0; j--){
+    if(events[j].player===e.player && events[j].m===e.m){
+      if(e.t-events[j].t<=20 && e.t-events[j].t>=0) return events[j].tech;
+      break;
+    }
+  }
+  return "";
+}
+function jpRows(){
+  const m = meta();
+  return events.map((e,i)=>[m.tournament,m.year,m.wclass,m.video,e.m,e.p,e.t,fmt(e.t),e.player,e.name||"",e.stance||"",e.phase,e.kind||"技",e.tech,e.target||"",e.result,e.points,prevOf(e,i)]);
+}
+
+onClick("btnTSV", ()=>{
+  if(noData()) return;
+  const clean = v=>String(v??"").replace(/\t/g," ");
+  download("wrestling_tags.tsv", "\uFEFF"+[JP_HEAD.join("\t")].concat(jpRows().map(r=>r.map(clean).join("\t"))).join("\n"), "text/tab-separated-values");
+});
+
+const RES_HEAD = ["tournament","year","weight_class","video","match_no","period","time_sec","player_color","player_name","stance","phase","action_type","action","target","result","points","prev_action"];
+onClick("btnResearch", ()=>{
+  if(noData()) return;
+  const m = meta();
+  const rows = events.map((e,i)=>[m.tournament,m.year,m.wclass,m.video,e.m,e.p,e.t,e.player,e.name||"",e.stance||"",e.phase,e.kind||"技",e.tech,e.target||"",e.result,e.points,prevOf(e,i)]);
+  const csv = [RES_HEAD.join(",")].concat(rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(","))).join("\n");
+  download("wrestling_research.csv", "\uFEFF"+csv, "text/csv");
+  const cb = [
+    "コードブック(wrestling_research.csv 変数定義)",
+    "==========================================",
+    "tournament   : 大会名",
+    "year         : 年",
+    "weight_class : 階級・スタイル",
+    "video        : 動画URLまたはファイル名",
+    "match_no     : セッション内の試合番号(1から連番)",
+    "period       : ピリオド(1-2)",
+    "time_sec     : タイムスタンプ(秒)。動画再生位置、ライブ採点では試合開始からの通算経過",
+    "player_color : 実施選手のコーナー色(赤 / 青)",
+    "player_name  : 選手名(記録時のメタ情報を転記)",
+    "stance       : 構え(右構え / 左構え)",
+    "phase        : 局面(スタンド / グラウンド)",
+    "action_type  : 種別(技 / セットアップ)。セットアップは崩し・いなし等の仕掛け",
+    "action       : 技・アクション名(チーム定義の語彙)",
+    "target       : 攻撃対象の相手部位(右手/左手/右足/左足/首/体幹。相手本人から見た左右)",
+    "result       : 結果(成功 / 失敗 / 不成立。空欄は未付与)",
+    "points       : 獲得ポイント(0-5)",
+    "prev_action  : 同一選手・同一試合・20秒以内の直前アクション(連鎖・遷移分析用)",
+    "",
+    "備考: タグ付けは1名の観察者による。観察者間一致率は未検証。"
+  ].join("\n");
+  download("codebook.txt", cb, "text/plain");
+});
+
+function loadXLSXLib(cb){
+  if(window.XLSX){ cb(); return; }
+  const s = document.createElement("script");
+  s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+  s.onload = cb;
+  s.onerror = ()=>alert("Excel用ライブラリを読み込めませんでした。インターネット接続を確認してください。");
+  document.head.appendChild(s);
+}
+onClick("btnXLSX", ()=>{
+  if(noData()) return;
+  loadXLSXLib(()=>{
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([JP_HEAD].concat(jpRows())), "生データ");
+    const st = statsOf(events);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(
+      [["アクション","試行","成功","成功率%","平均点"]].concat(st.map(s=>[s.tech,s.n,s.ok,s.rate,s.avg]))
+    ), "技別集計");
+    const pc = {}; const names = [];
+    chains(events).forEach(p=>{
+      if(!names.includes(p[0])) names.push(p[0]);
+      if(!names.includes(p[1])) names.push(p[1]);
+      pc[p[0]+"|"+p[1]] = (pc[p[0]+"|"+p[1]]||0)+1;
+    });
+    const aoa = [["直前\\次"].concat(names)];
+    names.forEach(a=>aoa.push([a].concat(names.map(b=>pc[a+"|"+b]||0))));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "遷移行列");
+    XLSX.writeFile(wb, "wrestling_data.xlsx");
+  });
+});
+
+function buildMD(){
+  const h = repHead();
+  const L = [];
+  L.push("# 試合レポート — " + h.title);
+  L.push("");
+  L.push("- 赤: " + (h.m.redName||"—") + "(" + h.m.redStance + ")");
+  L.push("- 青: " + (h.m.blueName||"—") + "(" + h.m.blueStance + ")");
+  if(h.m.video) L.push("- 動画: " + h.m.video);
+  L.push("");
+  matchNums().forEach(mn=>{
+    const sc = scoreOf(mn);
+    L.push("## 試合 " + mn + " — 赤 " + sc["赤"] + " : " + sc["青"] + " 青");
+    L.push("");
+    L.push("| タイム | P | 選手 | 局面 | 種別 | アクション | 部位 | 結果 | 点 |");
+    L.push("|---|---|---|---|---|---|---|---|---|");
+    events.filter(e=>e.m===mn).forEach(e=>{
+      L.push("| " + fmt(e.t) + " | " + e.p + " | " + e.player + " | " + e.phase + " | " + (e.kind||"技") + " | " + e.tech + " | " + (e.target||"") + " | " + (e.result||"") + " | " + (e.points||"") + " |");
+    });
+    L.push("");
+  });
+  L.push("## アクション別 試行数・成功率(全試合)");
+  L.push("");
+  L.push("| アクション | 試行 | 成功 | 成功率 | 平均点 |");
+  L.push("|---|---|---|---|---|");
+  statsOf(events).forEach(s=>L.push("| " + s.tech + " | " + s.n + " | " + s.ok + " | " + s.rate + "% | " + (s.avg||"—") + " |"));
+  L.push("");
+  L.push("## 頻出連鎖(同一選手・同一試合・20秒以内)");
+  L.push("");
+  pairsTop(events).forEach(p=>L.push("- " + p[0] + " ×" + p[1]));
+  L.push("");
+  L.push("## コーチコメント");
+  L.push("");
+  L.push("- ");
+  return L.join("\n");
+}
+onClick("btnMD", ()=>{ if(noData()) return; download("wrestling_report.md", buildMD(), "text/markdown"); });
+
+function buildTXT(){
+  const h = repHead();
+  const L = ["【結果】" + h.title];
+  matchNums().forEach(mn=>{
+    const sc = scoreOf(mn);
+    L.push("");
+    L.push("◆試合" + mn + " " + (h.m.redName||"赤") + " " + sc["赤"] + "-" + sc["青"] + " " + (h.m.blueName||"青"));
+    statsOf(events.filter(e=>e.m===mn)).slice(0,3).forEach(s=>{
+      L.push("・" + s.tech + " " + s.ok + "/" + s.n + "回成功");
+    });
+  });
+  return L.join("\n");
+}
+onClick("btnTXTSum", ()=>{
+  if(noData()) return;
+  const t = buildTXT();
+  download("summary.txt", t, "text/plain");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>{
+      pendingEl.innerHTML = "サマリーを<b>保存+コピー</b>しました。そのままLINE等に貼り付けられます。";
+    }).catch(()=>{});
+  }
+});
+
+function buildHTMLReport(){
+  const h = repHead();
+  const esc = s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+  let out = "<!DOCTYPE html><html lang=\"ja\"><head><meta charset=\"UTF-8\"><title>" + esc(h.title) + "</title>";
+  out += "<style>body{font-family:sans-serif;color:#222;max-width:800px;margin:20px auto;padding:0 16px;}";
+  out += "h1{font-size:20px;border-bottom:3px solid #C76A0C;padding-bottom:6px;}";
+  out += "h2{font-size:16px;margin-top:24px;border-left:5px solid #C76A0C;padding-left:8px;}";
+  out += "table{border-collapse:collapse;width:100%;font-size:12px;margin:8px 0;}";
+  out += "th,td{border:1px solid #bbb;padding:4px 6px;text-align:left;}th{background:#f3e8d9;}";
+  out += ".red{color:#C23B3B;font-weight:bold;}.blue{color:#2D6BC9;font-weight:bold;}";
+  out += ".note{color:#777;font-size:11px;}@media print{.noprint{display:none;}}<" + "/style></head><body>";
+  out += "<p class=\"note noprint\">このページを印刷(Ctrl+P、スマホは共有→プリント)し、送信先で「PDFに保存」を選ぶとPDFになります。</p>";
+  out += "<h1>試合レポート — " + esc(h.title) + "</h1>";
+  out += "<p>赤: " + esc(h.m.redName||"—") + "(" + esc(h.m.redStance) + ") / 青: " + esc(h.m.blueName||"—") + "(" + esc(h.m.blueStance) + ")</p>";
+  matchNums().forEach(mn=>{
+    const sc = scoreOf(mn);
+    out += "<h2>試合 " + mn + " — <span class=\"red\">赤 " + sc["赤"] + "</span> : <span class=\"blue\">" + sc["青"] + " 青</span></h2>";
+    out += "<table><tr><th>タイム</th><th>P</th><th>選手</th><th>局面</th><th>アクション</th><th>部位</th><th>結果</th><th>点</th></tr>";
+    events.filter(e=>e.m===mn).forEach(e=>{
+      out += "<tr><td>" + fmt(e.t) + "</td><td>" + e.p + "</td><td class=\"" + (e.player==="赤"?"red":"blue") + "\">" + e.player + "</td><td>" + esc(e.phase) + "</td><td>" + esc(e.tech) + "</td><td>" + esc(e.target||"") + "</td><td>" + esc(e.result||"") + "</td><td>" + (e.points||"") + "</td></tr>";
+    });
+    out += "</table>";
+  });
+  out += "<h2>アクション別 試行数・成功率(全試合)</h2><table><tr><th>アクション</th><th>試行</th><th>成功</th><th>成功率</th><th>平均点</th></tr>";
+  statsOf(events).forEach(s=>{
+    out += "<tr><td>" + esc(s.tech) + "</td><td>" + s.n + "</td><td>" + s.ok + "</td><td>" + s.rate + "%</td><td>" + (s.avg||"—") + "</td></tr>";
+  });
+  out += "</table><h2>頻出連鎖</h2><ul>";
+  pairsTop(events).forEach(p=>{ out += "<li>" + esc(p[0]) + " ×" + p[1] + "</li>"; });
+  out += "</ul><h2>コーチコメント</h2><div style=\"border:1px solid #bbb;height:120px;\"></div></body></html>";
+  return out;
+}
+onClick("btnHTMLRep", ()=>{ if(noData()) return; download("wrestling_report.html", buildHTMLReport(), "text/html"); });
+
+onClick("btnMDCopy", ()=>{
+  if(noData()) return;
+  const L = ["| アクション | 試行 | 成功 | 成功率 | 平均点 |","|---|---|---|---|---|"];
+  statsOf(events).forEach(s=>L.push("| " + s.tech + " | " + s.n + " | " + s.ok + " | " + s.rate + "% | " + (s.avg||"—") + " |"));
+  L.push(""); L.push("頻出連鎖:");
+  pairsTop(events).forEach(p=>L.push("- " + p[0] + " ×" + p[1]));
+  const t = L.join("\n");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>{
+      pendingEl.innerHTML = "集計表を<b>Markdown形式でコピー</b>しました。";
+    }).catch(()=>download("tables.md", t, "text/markdown"));
+  }else{
+    download("tables.md", t, "text/markdown");
+  }
+});
+
+onClick("btnPNG", ()=>{
+  if(noData()) return;
+  const m = meta();
+  const sc = scoreOf(matchNo);
+  const c = document.createElement("canvas");
+  c.width = 720; c.height = 420;
+  const x = c.getContext("2d");
+  x.fillStyle = "#1F242E"; x.fillRect(0,0,720,420);
+  x.fillStyle = "#F0972F"; x.font = "bold 26px sans-serif";
+  x.fillText((m.tournament||"試合結果") + " " + (m.year||""), 30, 50);
+  x.fillStyle = "#9AA3B2"; x.font = "16px sans-serif";
+  x.fillText((m.wclass||"") + "  試合 " + matchNo, 30, 80);
+  x.fillStyle = "rgba(217,74,74,.25)"; x.fillRect(30,105,320,150);
+  x.fillStyle = "rgba(62,123,214,.25)"; x.fillRect(370,105,320,150);
+  x.fillStyle = "#D94A4A"; x.font = "bold 20px sans-serif";
+  x.fillText(m.redName||"赤", 50, 140);
+  x.fillStyle = "#3E7BD6";
+  x.fillText(m.blueName||"青", 390, 140);
+  x.fillStyle = "#E9ECF2"; x.font = "bold 64px sans-serif";
+  x.fillText(String(sc["赤"]), 50, 225);
+  x.fillText(String(sc["青"]), 390, 225);
+  x.font = "15px sans-serif"; x.fillStyle = "#9AA3B2";
+  let y = 300;
+  x.fillText("主なアクション(この試合):", 30, y); y += 26;
+  x.fillStyle = "#E9ECF2";
+  statsOf(events.filter(e=>e.m===matchNo)).slice(0,3).forEach(s=>{
+    x.fillText("・" + s.tech + "  " + s.ok + "/" + s.n + " 成功", 44, y); y += 24;
+  });
+  c.toBlob(b=>{
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = "result_card.png";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+});
 
 /* ===== 設定モーダル ===== */
 const settingsOverlay = document.getElementById("settingsOverlay");
